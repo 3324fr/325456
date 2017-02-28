@@ -15,12 +15,42 @@
         android:text="Gourde"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/button"
+        android:onClick="picture"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="text|textPersonName"
+        android:hint="@string/enter_your_username"
+        android:text="@string/group_name"
+        android:ems="10"
+        android:id="@+id/et_groupname"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="162dp"
-        android:layout_marginTop="243dp"
-        android:id="@+id/button"
-        android:onClick="picture" />
+        android:layout_toStartOf="@+id/btn_confirmU" />
+
+    <Button
+        android:text="@string/confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_confirmG"
+        android:onClick="OnClickConfirm"
+        android:layout_below="@+id/et_groupname"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/btn_confirmU" />
+
+    <Button
+        android:text="@string/confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_confirmU"
+        android:onClick="OnClickConfirm"
+        android:layout_below="@+id/et_groupname"
+        android:layout_alignStart="@+id/et_username"
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -29,30 +59,19 @@
         android:hint="@string/enter_your_username"
         android:text="@string/username"
         android:ems="10"
+        android:id="@+id/et_username"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="90dp"
-        android:id="@+id/et_username" />
-
-    <Button
-        android:text="@string/confirm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_confirm"
-        android:layout_below="@+id/et_username"
-        android:layout_alignParentStart="true"
-        android:onClick="OnClickConfirm"
-        android:layout_alignEnd="@+id/et_username" />
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/btn_group" />
 
     <Button
         android:text="@string/join_or_create_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn_group"
-        android:layout_below="@+id/btn_confirm"
-        android:layout_alignParentStart="true"
         android:onClick="OnClickGroup"
-        android:layout_alignEnd="@+id/et_username" />
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
 
     <ImageView
         android:layout_width="wrap_content"

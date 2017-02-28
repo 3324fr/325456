@@ -1,21 +1,18 @@
 package inf8405_tp2.tp2;
 
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,14 +20,17 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String m_TemporateUserName;
-    public final static String EXTRA_USER_NAME = "inf8405_tp2.tp2.USER_NAME";
+    private String m_UserName;
+    private String m_GroupName;
+    private RelativeLayout m_CurrentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        m_CurrentLayout = (RelativeLayout)findViewById(R.id.activity_main);
+        EditText editTextPrice = (EditText) findViewById(R.id.et_username);
+        editTextPrice.addTextChangedListener(new GenericTextWatcher(editTextPrice));
     }
 
     public void picture(View view) {
@@ -40,29 +40,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickConfirm(View view){
-        m_TemporateUserName = ((EditText)findViewById(R.id.et_username)).getText().toString();
-        Toast.makeText(this, m_TemporateUserName, Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(MainActivity.this, TakePictureActivity.class);
-        intent.putExtra(EXTRA_USER_NAME, m_TemporateUserName);
-        startActivity(intent);
-
-//        DatabaseHelper mDbHelper = new DatabaseHelper(getApplicationContext());
-//        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-//        Profile profile = Profile.gourde(db,m_TemporateUserName,m_TemporateUserName);
-//        byte[] imgbytes = profile.picture_;
-//        Bitmap imageBitmap =  BitmapFactory.decodeByteArray(imgbytes, 0,
-//                imgbytes.length);;
-//        ImageView mImageView = (ImageView) findViewById(R.id.sadsad);
-//        mImageView.setImageBitmap(imageBitmap);
-
-
-
-
-
+        switch(view.getId()){
+            case R.id.btn_confirmU:
+                m_UserName = ((EditText)findViewById(R.id.et_username)).getText().toString();
+                Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.btn_confirmG:
+                m_GroupName = ((EditText)findViewById(R.id.et_groupname)).getText().toString();
+                Toast.makeText(this, m_GroupName, Toast.LENGTH_SHORT).show();
+                break;
+        }
 
     }
 
     public void OnClickGroup(View view) {
+        Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        startActivity(intent);
     }
 
 
@@ -80,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         {
             switch(view.getId()){
                 case R.id.et_username:
+                    break;
+                case R.id.et_groupname:
                     break;
             }
         }
