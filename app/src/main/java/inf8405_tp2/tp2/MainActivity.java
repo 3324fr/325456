@@ -9,7 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -18,13 +20,15 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String m_TemporateUserName;
+    private String m_UserName;
+    private String m_GroupName;
+    private RelativeLayout m_CurrentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        m_CurrentLayout = (RelativeLayout)findViewById(R.id.activity_main);
         EditText editTextPrice = (EditText) findViewById(R.id.et_username);
         editTextPrice.addTextChangedListener(new GenericTextWatcher(editTextPrice));
     }
@@ -36,11 +40,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickConfirm(View view){
-        m_TemporateUserName = ((EditText)findViewById(R.id.et_username)).getText().toString();
-        Toast.makeText(this, m_TemporateUserName, Toast.LENGTH_SHORT).show();
+        switch(view.getId()){
+            case R.id.btn_confirmU:
+                m_UserName = ((EditText)findViewById(R.id.et_username)).getText().toString();
+                Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.btn_confirmG:
+                m_GroupName = ((EditText)findViewById(R.id.et_groupname)).getText().toString();
+                Toast.makeText(this, m_GroupName, Toast.LENGTH_SHORT).show();
+                break;
+        }
+
     }
 
     public void OnClickGroup(View view) {
+        Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        startActivity(intent);
     }
 
 
@@ -58,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         {
             switch(view.getId()){
                 case R.id.et_username:
+                    break;
+                case R.id.et_groupname:
                     break;
             }
         }
