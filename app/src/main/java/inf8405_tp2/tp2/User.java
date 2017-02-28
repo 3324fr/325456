@@ -8,4 +8,6 @@ import android.content.Context;
 
 public class User {
 
+    private Profile profile_;
+
 }
