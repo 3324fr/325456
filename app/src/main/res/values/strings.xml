@@ -7,4 +7,6 @@
     <string name="cancel">Cancel</string>
     <string name="edit_me">Edit Me</string>
     <string name="group_name">Group Name</string>
+    <string name="location">Location</string>
+    <string name="show_location">Show Location</string>
 </resources>
