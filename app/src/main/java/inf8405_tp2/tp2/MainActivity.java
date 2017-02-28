@@ -1,9 +1,12 @@
 package inf8405_tp2.tp2;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,15 +16,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
+
 public class MainActivity extends AppCompatActivity {
 
-    private String m_UserName;
-    private String m_GroupName;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    public final static String USER_NAME = "inf8405_tp2.tp2.UserName";
+    public final static String GROUP_NAME = "inf8405_tp2.tp2.GroupName";
+
+
     private RelativeLayout m_CurrentLayout;
 
     @Override
@@ -33,23 +42,34 @@ public class MainActivity extends AppCompatActivity {
         editTextPrice.addTextChangedListener(new GenericTextWatcher(editTextPrice));
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            ImageView mImageView = (ImageView) findViewById(R.id.picture);
+            mImageView.setImageBitmap(imageBitmap);
+        }
+    }//onActivityResult
+
     public void picture(View view) {
-        // Do something in response to button
-        Intent intent = new Intent(MainActivity.this, TakePictureActivity.class);
-        startActivity(intent);
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
     }
 
     public void OnClickConfirm(View view){
-        switch(view.getId()){
-            case R.id.btn_confirmU:
-                m_UserName = ((EditText)findViewById(R.id.et_username)).getText().toString();
-                Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.btn_confirmG:
-                m_GroupName = ((EditText)findViewById(R.id.et_groupname)).getText().toString();
-                Toast.makeText(this, m_GroupName, Toast.LENGTH_SHORT).show();
-                break;
-        }
+
+        EditText editText_userName = ((EditText)findViewById(R.id.et_username));
+        EditText editText_group = ((EditText)findViewById(R.id.et_groupname));
+        String m_UserName  = editText_userName.getText().toString();
+        String m_GroupName  = editText_group.getText().toString();
+
+        Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, m_GroupName, Toast.LENGTH_SHORT).show();
+
 
     }
 

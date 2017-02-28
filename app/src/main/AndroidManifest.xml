@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="inf8405_tp2.tp2">
+
     <!-- https://www.tutorialspoint.com/android/android_google_maps.htm -->
     <!--
        The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -34,9 +35,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MapActivity">
-        </activity>
-        <activity android:name=".TakePictureActivity"></activity>
+        <activity android:name=".MapActivity"></activity>
+
+        <service
+            android:name=".MyIntentService"
+            android:exported="false"></service>
     </application>
+
 </manifest>
