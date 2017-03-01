@@ -23,6 +23,7 @@ public final class ContractSQLite {
         public static final String COLUMN_NAME_PICTURE = "photo";
     }
 
+
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + ProfileEntry.TABLE_NAME + " (" +
                     ProfileEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
