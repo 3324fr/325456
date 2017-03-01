@@ -1,5 +1,6 @@
 package inf8405_tp2.tp2;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -18,11 +19,12 @@ public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
-    public final static String USER = "inf8405_tp2.tp2.User";
+    private UserFragment mUserFragment;
+
+    public final static String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
 
 
     private RelativeLayout m_CurrentLayout;
-    static private User user = new User();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,28 @@ public class MainActivity extends AppCompatActivity {
         m_CurrentLayout = (RelativeLayout) findViewById(R.id.activity_main);
         EditText editTextPrice = (EditText) findViewById(R.id.et_username);
         editTextPrice.addTextChangedListener(new GenericTextWatcher(editTextPrice));
+
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getFragmentManager();
+        mUserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
+        // create the fragment and data the first time
+        if (mUserFragment == null) {
+            // add the fragment
+            mUserFragment = new UserFragment();
+            fm.beginTransaction().add(mUserFragment, TAG_RETAINED_USER).commit();
+
+            mUserFragment.setData(new User(new Profile("User Name", "Group Name")));
+        }
+
+
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        ImageView mImageView = (ImageView) findViewById(R.id.picture);
+        mImageView.setImageBitmap( mUserFragment.getData().profile_.picture_);
+
     }
 
     @Override
@@ -39,20 +63,18 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            user.profile_.picture_ = imageBitmap;
-            user.profile_.save(getApplicationContext());
+            mUserFragment.getData().profile_.picture_ = imageBitmap;
+            mUserFragment.getData().profile_.save(getApplicationContext());
 
-            ImageView mImageView = (ImageView) findViewById(R.id.picture);
-            mImageView.setImageBitmap(user.profile_.picture_);
+
+
+
 
         }
     }//onActivityResult
 
     private void picture() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
+
     }
 
     public void OnClickConfirm(View view) {
@@ -67,12 +89,15 @@ public class MainActivity extends AppCompatActivity {
         Profile profile = Profile.get(getApplicationContext(), m_UserName, m_GroupName);
 
         if (profile == null) {
-            user.profile_ = new Profile(m_UserName, m_GroupName);
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+
+            mUserFragment.setData(new User(new Profile(m_UserName, m_GroupName)));
             picture();
         } else {
-            user.profile_ = profile;
-            ImageView mImageView = (ImageView) findViewById(R.id.picture);
-            mImageView.setImageBitmap(user.profile_.picture_);
+            mUserFragment.setData(new User(profile));
         }
     }
 

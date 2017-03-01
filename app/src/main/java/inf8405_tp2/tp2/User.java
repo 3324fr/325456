@@ -9,6 +9,11 @@ import android.graphics.Bitmap;
 
 public class User {
 
+    public User(){}
+
+    public User(Profile profile){
+        this.profile_ = profile;
+    }
 
     public Profile profile_;
     public Group group_;
