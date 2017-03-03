@@ -17,19 +17,16 @@ import java.io.ByteArrayOutputStream;
 public class Profile {
 
     public String name_;
-    public String group_;
     public Bitmap picture_;
-    public Boolean manager_;
 
-    public Profile(String name, String group, Bitmap picture) {
+
+    public Profile(String name, Bitmap picture) {
         name_ = name;
-        group_ = group;
         picture_ = picture;
     }
 
-    public Profile(String name, String group) {
+    public Profile(String name) {
         name_ = name;
-        group_ = group;
     }
 
 
@@ -45,7 +42,6 @@ public class Profile {
         // Create insert entries
         ContentValues values = new ContentValues();
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, name_);
-        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_SUBTITLE, group_);
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, stream.toByteArray());
         long newRowId = db.insert(ContractSQLite.ProfileEntry.TABLE_NAME, null, values);
 
@@ -53,7 +49,7 @@ public class Profile {
 
     }
 
-    public static Profile get(Context context, String name, String group) {
+    public static Profile get(Context context, String name) {
 
         DatabaseHelper helper = new DatabaseHelper(context);
 
@@ -64,14 +60,12 @@ public class Profile {
         String[] projection = {
                 ContractSQLite.ProfileEntry._ID,
                 ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE,
-                ContractSQLite.ProfileEntry.COLUMN_NAME_SUBTITLE,
                 ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE
         };
 
         // Filter results WHERE
-        String selection = ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " = ? AND " +
-                ContractSQLite.ProfileEntry.COLUMN_NAME_SUBTITLE + " = ?";
-        String[] selectionArgs = {name, group};
+        String selection = ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " = ?";
+        String[] selectionArgs = {name};
 
 
         Cursor cursor = db.query(
@@ -86,11 +80,11 @@ public class Profile {
 
         Profile profile = null;
         if( cursor != null && cursor.moveToFirst() ){
-            byte[] bitmapbytes = cursor.getBlob(3);
+            byte[] bitmapbytes = cursor.getBlob(2);
             Bitmap bitmap = null;
             if(bitmapbytes != null)
                 bitmap = BitmapFactory.decodeByteArray(bitmapbytes, 0, bitmapbytes.length);
-            profile = new Profile(cursor.getString(1), cursor.getString(2), bitmap);
+            profile = new Profile(cursor.getString(1), bitmap);
         }
 
         db.close();
