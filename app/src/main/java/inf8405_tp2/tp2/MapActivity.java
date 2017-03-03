@@ -1,6 +1,7 @@
 package inf8405_tp2.tp2;
 
 import android.Manifest;
+import android.app.FragmentManager;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -47,9 +48,12 @@ public class MapActivity extends FragmentActivity implements
     private GoogleApiClient m_GoogleApiClient;
     private Location m_CurrentLocation;
     private String m_LastUpdateTime;
+    private UserFragment m_UserFragment;
     private GoogleMap m_Map;
     private String m_lat;
     private String m_lng;
+    private User m_currentUser;
+    private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
 
     protected void createLocationRequest() {
         m_LocationRequest = new LocationRequest();
@@ -66,6 +70,21 @@ public class MapActivity extends FragmentActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getFragmentManager();
+        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
+
+        // create the fragment and data the first time
+        if (m_UserFragment == null) {
+            Log.d("FragInvalidMap", "OnCreate no frag profile found");
+            // add the fragment
+            m_UserFragment = new UserFragment();
+            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+            m_UserFragment.set(new User(new Profile("User Name")));
+            m_currentUser = m_UserFragment.getUser();
+        }
+
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -146,6 +165,9 @@ public class MapActivity extends FragmentActivity implements
         m_CurrentLocation = location;
         m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
+        if(m_currentUser!=null){
+            m_currentUser.updateLocation(m_CurrentLocation);
+        }
     }
 
     private void updateUI(){

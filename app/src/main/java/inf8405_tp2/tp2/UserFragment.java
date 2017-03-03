@@ -22,8 +22,6 @@ public class UserFragment extends Fragment {
         setRetainInstance(true);
     }
 
-
-
     public User getUser() { return m_user; }
 
     public Group getGroup() { return m_group; }

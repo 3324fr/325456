@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
-    private UserFragment mUserFragment;
+    private UserFragment m_UserFragment;
 
     public final static String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
 
@@ -38,20 +38,20 @@ public class MainActivity extends AppCompatActivity {
 
         // find the retained fragment on activity restarts
         FragmentManager fm = getFragmentManager();
-        mUserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
 
         // create the fragment and data the first time
-        if (mUserFragment == null) {
+        if (m_UserFragment == null) {
             // add the fragment
-            mUserFragment = new UserFragment();
-            fm.beginTransaction().add(mUserFragment, TAG_RETAINED_USER).commit();
-            mUserFragment.set(new User(new Profile("User Name")));
+            m_UserFragment = new UserFragment();
+            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+            m_UserFragment.set(new User(new Profile("User Name")));
         }
     }
     @Override
     public void onResume(){
         super.onResume();
-        user =  mUserFragment.getUser();
+        user =  m_UserFragment.getUser();
         picture();
     }
 
@@ -61,15 +61,15 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            user =  mUserFragment.getUser();
+            user =  m_UserFragment.getUser();
             user.m_profile.m_picture = imageBitmap;
             user.m_profile.save(getApplicationContext());
-            mUserFragment.set(user);
+            m_UserFragment.set(user);
         }
     }//onActivityResult
 
     private void picture() {
-        user =  mUserFragment.getUser();
+        user =  m_UserFragment.getUser();
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
         mImageView.setImageBitmap(  user.m_profile.m_picture);
     }
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             user.m_profile = profile;
-            mUserFragment.set(user);
+            m_UserFragment.set(user);
             picture();
         }
     }
