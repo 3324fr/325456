@@ -17,5 +17,4 @@ public class User {
 
     public Profile profile_;
     public Group group_;
-
 }

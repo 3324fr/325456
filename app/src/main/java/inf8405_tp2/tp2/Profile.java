@@ -32,7 +32,6 @@ public class Profile {
         group_ = group;
     }
 
-
     public void save(Context context) {
 
         DatabaseHelper helper = new DatabaseHelper(context);

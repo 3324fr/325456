@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,25 +21,35 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
 
-public class MapActivity extends AppCompatActivity implements
+public class MapActivity extends FragmentActivity implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        OnMapReadyCallback {
 
     private static final String TAG = "LocationActivity";
     private static final long INTERVAL = 1000 * 10;
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final int REQUEST_LOCATION = 2;
-    Button btnFusedLocation;
-    TextView tvLocation;
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
-    Location mCurrentLocation;
-    String mLastUpdateTime;
+    private Button btnFusedLocation;
+    private TextView tvLocation;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mCurrentLocation;
+    private String mLastUpdateTime;
+    private GoogleMap mMap;
+    private String lat;
+    private String lng;
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
@@ -73,6 +84,9 @@ public class MapActivity extends AppCompatActivity implements
             }
         });
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     @Override
@@ -137,13 +151,18 @@ public class MapActivity extends AppCompatActivity implements
     private void updateUI() {
         Log.d(TAG, "UI update initiated .............");
         if (null != mCurrentLocation) {
-            String lat = String.valueOf(mCurrentLocation.getLatitude());
-            String lng = String.valueOf(mCurrentLocation.getLongitude());
+            lat = String.valueOf(mCurrentLocation.getLatitude());
+            lng = String.valueOf(mCurrentLocation.getLongitude());
             tvLocation.setText("At Time: " + mLastUpdateTime + "\n" +
                     "Latitude: " + lat + "\n" +
                     "Longitude: " + lng + "\n" +
                     "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
                     "Provider: " + mCurrentLocation.getProvider());
+            if(lat != null && lng != null){
+                LatLng localLoc = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+                mMap.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+            }
         } else {
             Log.d(TAG, "location is null ...............");
         }
@@ -195,6 +214,18 @@ public class MapActivity extends AppCompatActivity implements
             } else {
                 // Permission was denied or request was cancelled
             }
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        updateUI();
+        // Add a marker in Sydney and move the camera
+        if(lat != null && lng != null){
+            LatLng localLoc = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+            mMap.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
         }
     }
 }

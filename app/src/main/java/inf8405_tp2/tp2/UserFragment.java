@@ -9,7 +9,6 @@ import android.os.Bundle;
  */
 public class UserFragment extends Fragment {
 
-
     // data object we want to retain
     private User user;
 
@@ -28,7 +27,4 @@ public class UserFragment extends Fragment {
     public User getData() {
         return user;
     }
-
-
-
 }
