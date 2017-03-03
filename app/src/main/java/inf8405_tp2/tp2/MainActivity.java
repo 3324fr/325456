@@ -62,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             user =  mUserFragment.getUser();
-            user.profile_.picture_ =imageBitmap;
-            user.profile_.save(getApplicationContext());
+            user.m_profile.m_picture = imageBitmap;
+            user.m_profile.save(getApplicationContext());
             mUserFragment.set(user);
         }
     }//onActivityResult
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private void picture() {
         user =  mUserFragment.getUser();
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap(  user.profile_.picture_);
+        mImageView.setImageBitmap(  user.m_profile.m_picture);
     }
 
     public void OnClickConfirm(View view) {
@@ -86,13 +86,13 @@ public class MainActivity extends AppCompatActivity {
         Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
         if (profile == null) {
-            user.profile_ = new Profile(m_UserName);
+            user.m_profile = new Profile(m_UserName);
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
         } else {
-            user.profile_ = profile;
+            user.m_profile = profile;
             mUserFragment.set(user);
             picture();
         }

@@ -10,4 +10,5 @@ public class Manager extends User {
     super(user);
     }
 
+
 }

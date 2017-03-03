@@ -9,30 +9,30 @@ import java.util.List;
 
 public class Group {
 
-    public String name_;
-    public Manager manager_;
-    private List<User> users_;
+    public String m_name_;
+    public Manager m_manager_;
+    private List<User> m_users;
 
     public  void Group(Manager manager, String name){
-        this.manager_ = manager;
-        this.name_ = name;
-        this.users_ =  new ArrayList<User>();
+        this.m_manager_ = manager;
+        this.m_name_ = name;
+        this.m_users =  new ArrayList<User>();
     }
 
     public void setUsers(User user){
-        this.users_.clear();
-        this.users_.add(user);
+        this.m_users.clear();
+        this.m_users.add(user);
     }
 
     public void addUsers(User user){
-        this.users_.add(user);
+        this.m_users.add(user);
     }
 
     public List<User> getUsers(List<User> user){
-        return this.users_;
+        return this.m_users;
     }
 
     public void setUsers(List<User> users){
-        this.users_ = users;
+        this.m_users = users;
     }
 }

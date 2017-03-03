@@ -16,17 +16,17 @@ import java.io.ByteArrayOutputStream;
 
 public class Profile {
 
-    public String name_;
-    public Bitmap picture_;
+    public String m_name;
+    public Bitmap m_picture;
 
 
     public Profile(String name, Bitmap picture) {
-        name_ = name;
-        picture_ = picture;
+        m_name = name;
+        m_picture = picture;
     }
 
     public Profile(String name) {
-        name_ = name;
+        m_name = name;
     }
 
     public void save(Context context) {
@@ -36,11 +36,11 @@ public class Profile {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        picture_.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        m_picture.compress(Bitmap.CompressFormat.PNG, 0, stream);
 
         // Create insert entries
         ContentValues values = new ContentValues();
-        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, name_);
+        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, m_name);
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, stream.toByteArray());
         long newRowId = db.insert(ContractSQLite.ProfileEntry.TABLE_NAME, null, values);
 

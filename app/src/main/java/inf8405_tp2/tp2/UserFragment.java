@@ -10,9 +10,9 @@ import android.os.Bundle;
 public class UserFragment extends Fragment {
 
     // data object we want to retain
-    private User user;
+    private User m_user;
 
-    private Group group;
+    private Group m_group;
 
     // this method is only called once for this fragment
     @Override
@@ -24,13 +24,13 @@ public class UserFragment extends Fragment {
 
 
 
-    public User getUser() { return user; }
+    public User getUser() { return m_user; }
 
-    public Group getGroup() { return group; }
+    public Group getGroup() { return m_group; }
 
     public void set(Group data) {
-        this.group = data;
+        this.m_group = data;
     }
 
-    public void set(User data) { this.user = data; }
+    public void set(User data) { this.m_user = data; }
 }

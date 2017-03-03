@@ -9,17 +9,17 @@ import android.graphics.Bitmap;
 
 public class User {
 
+    public Profile m_profile;
+    public Group m_group;
+
     public User(){}
 
     public User(Profile profile){
-        this.profile_ = profile;
+        this.m_profile = profile;
     }
 
     protected User(User user){
-        this(user.profile_);
+        this(user.m_profile);
     }
 
-    public Profile profile_;
-
-    public Group group_;
 }
