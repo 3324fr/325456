@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
     private UserFragment m_UserFragment;
 
     private FirebaseDatabase m_FirebaseDatabase;
+    private DatabaseReference m_UserRef;
 
     public final static String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
 
-    private DatabaseReference m_Database;
     private static final String TAG = "NewPostActivity";
     private static final String REQUIRED = "Required";
     private static final String m_TestUserId = "steakUser";
@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
 
     private User user;
 
+    private String exampleUser = "id\n" +
+            "{\t\n" +
+            "\"userName\" : \"val\",\n" +
+            "\"picture\" : \"link\",\n" +
+            "\"groupe\" : [\"gr\",\"gr2\"]\n" +
+            "}";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
             m_UserFragment.set(new User(new Profile("User Name")));
         }
+
+        m_FirebaseDatabase = FirebaseDatabase.getInstance();
     }
     @Override
     public void onResume(){
@@ -136,63 +144,79 @@ public class MainActivity extends AppCompatActivity {
 
         Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
+        m_UserRef = m_FirebaseDatabase.getReference(m_UserName);
+
+
+
+        m_UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                String value = dataSnapshot.getValue(String.class);
+                Log.d(TAG, "Value is: " + value);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+
         //m_Database = FirebaseDatabase.getInstance().getReference();
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
-
-        myRef.setValue("22222gfdgdf");
     }
 
-    private void submitPost() {
-        Toast.makeText(this, "Posting...", Toast.LENGTH_SHORT).show();
-
-        // [START single_value_read]
-        //final String userId = getUid();
-        m_Database.child("users").child("").addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
-                        User user = dataSnapshot.getValue(User.class);
-
-                        // [START_EXCLUDE]
-                        if (user == null) {
-                            // User is null, error out
-                            Log.e(TAG, "User " + m_TestUserId + " is unexpectedly null");
-                            Toast.makeText(MainActivity.this,
-                                    "Error: could not fetch user.",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            // Write new post
-                            writeNewPost(m_TestUserId, m_UserName, m_TestTitle, m_TestBody);
-                        }
-
-                        finish();
-                        // [END_EXCLUDE]
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                });
-        // [END single_value_read]
-    }
-
-    private void writeNewPost(String userId, String username, String title, String body) {
-        // Create new post at /user-posts/$userid/$postid and at
-        // /posts/$postid simultaneously
-        String key = m_Database.child("posts").push().getKey();
-        Post post = new Post(userId, username, title, body);
-        Map<String, Object> postValues = post.toMap();
-
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/posts/" + key, postValues);
-        childUpdates.put("/user-posts/" + userId + "/" + key, postValues);
-
-        m_Database.updateChildren(childUpdates);
-    }
+//    private void submitPost() {
+//        Toast.makeText(this, "Posting...", Toast.LENGTH_SHORT).show();
+//
+//        // [START single_value_read]
+//        //final String userId = getUid();
+//        m_FirebaseDatabase.child("users").child("").addListenerForSingleValueEvent(
+//                new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                        // Get user value
+//                        User user = dataSnapshot.getValue(User.class);
+//
+//                        // [START_EXCLUDE]
+//                        if (user == null) {
+//                            // User is null, error out
+//                            Log.e(TAG, "User " + m_TestUserId + " is unexpectedly null");
+//                            Toast.makeText(MainActivity.this,
+//                                    "Error: could not fetch user.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        } else {
+//                            // Write new post
+//                            writeNewPost(m_TestUserId, m_UserName, m_TestTitle, m_TestBody);
+//                        }
+//
+//                        finish();
+//                        // [END_EXCLUDE]
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+//                    }
+//                });
+//        // [END single_value_read]
+//    }
+//
+//    private void writeNewPost(String userId, String username, String title, String body) {
+//        // Create new post at /user-posts/$userid/$postid and at
+//        // /posts/$postid simultaneously
+//        String key = m_Database.child("posts").push().getKey();
+//        Post post = new Post(userId, username, title, body);
+//        Map<String, Object> postValues = post.toMap();
+//
+//        Map<String, Object> childUpdates = new HashMap<>();
+//        childUpdates.put("/posts/" + key, postValues);
+//        childUpdates.put("/user-posts/" + userId + "/" + key, postValues);
+//
+//        m_Database.updateChildren(childUpdates);
+//    }
 
     public void OnClickGroup(View view) {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
