@@ -6,5 +6,8 @@ package inf8405_tp2.tp2;
 
 public class Manager extends User {
 
+    public Manager(User user) {
+    super(user);
+    }
 
 }

@@ -97,8 +97,13 @@
         jumboMode="true"
         optimize="true"
         revision="23.0.2"
+<<<<<<< HEAD
         sha1="7a64bf6dc775198eed9db9468a133adf7dfe6562">
         <dex dex="C:\Users\lam_1\StudioProjects\325456\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.google.android.gms-play-services-fitness-10.0.1_4b0c95e93c031d1eb5a866dace24bca52795f3bf\classes.dex" />
+=======
+        sha1="fb1f9a2ecb41f179cf9fbac42da4d03d52d23e60">
+        <dex dex="F:\New folder\325456\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_cbe4c7076e4cd06f0848852e6ef71fc64c5b5ef8\classes.dex" />
+>>>>>>> d9f658fde2dca5fd5fc21a297feb16c821e498e9
     </item>
     <item
         is-multidex="true"
@@ -151,8 +156,13 @@
         jumboMode="true"
         optimize="true"
         revision="23.0.2"
+<<<<<<< HEAD
         sha1="756f6297eef79784f5e356dcd4f39865028b2bd0">
         <dex dex="C:\Users\lam_1\StudioProjects\325456\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.google.android.gms-play-services-basement-10.0.1_66d1ee0a932844eeaffc54e91c1fa17b5f0019ee\classes.dex" />
+=======
+        sha1="dc470d355c471bb175636d4ec814608ca054da7b">
+        <dex dex="F:\New folder\325456\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_b5c25bc38675cd5c870f06ef08b43281ce2056a8\classes.dex" />
+>>>>>>> d9f658fde2dca5fd5fc21a297feb16c821e498e9
     </item>
     <item
         is-multidex="true"

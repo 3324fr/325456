@@ -15,6 +15,11 @@ public class User {
         this.profile_ = profile;
     }
 
+    protected User(User user){
+        this(user.profile_);
+    }
+
     public Profile profile_;
+
     public Group group_;
 }

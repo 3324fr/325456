@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     private RelativeLayout m_CurrentLayout;
 
+    private User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,18 +45,14 @@ public class MainActivity extends AppCompatActivity {
             // add the fragment
             mUserFragment = new UserFragment();
             fm.beginTransaction().add(mUserFragment, TAG_RETAINED_USER).commit();
-
-            mUserFragment.setData(new User(new Profile("User Name", "Group Name")));
+            mUserFragment.set(new User(new Profile("User Name")));
         }
-
-
     }
     @Override
     public void onResume(){
         super.onResume();
-        ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap( mUserFragment.getData().profile_.picture_);
-
+        user =  mUserFragment.getUser();
+        picture();
     }
 
     @Override
@@ -63,18 +61,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mUserFragment.getData().profile_.picture_ = imageBitmap;
-            mUserFragment.getData().profile_.save(getApplicationContext());
-
-
-
-
-
+            user =  mUserFragment.getUser();
+            user.profile_.picture_ =imageBitmap;
+            user.profile_.save(getApplicationContext());
+            mUserFragment.set(user);
         }
     }//onActivityResult
 
     private void picture() {
-
+        user =  mUserFragment.getUser();
+        ImageView mImageView = (ImageView) findViewById(R.id.picture);
+        mImageView.setImageBitmap(  user.profile_.picture_);
     }
 
     public void OnClickConfirm(View view) {
@@ -86,18 +83,18 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, m_UserName + m_GroupName, Toast.LENGTH_SHORT).show();
 
-        Profile profile = Profile.get(getApplicationContext(), m_UserName, m_GroupName);
+        Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
         if (profile == null) {
+            user.profile_ = new Profile(m_UserName);
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
-
-            mUserFragment.setData(new User(new Profile(m_UserName, m_GroupName)));
-            picture();
         } else {
-            mUserFragment.setData(new User(profile));
+            user.profile_ = profile;
+            mUserFragment.set(user);
+            picture();
         }
     }
 

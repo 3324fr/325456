@@ -12,6 +12,8 @@ public class UserFragment extends Fragment {
     // data object we want to retain
     private User user;
 
+    private Group group;
+
     // this method is only called once for this fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -20,11 +22,15 @@ public class UserFragment extends Fragment {
         setRetainInstance(true);
     }
 
-    public void setData(User data) {
-        this.user = data;
+
+
+    public User getUser() { return user; }
+
+    public Group getGroup() { return group; }
+
+    public void set(Group data) {
+        this.group = data;
     }
 
-    public User getData() {
-        return user;
-    }
+    public void set(User data) { this.user = data; }
 }
