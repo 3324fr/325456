@@ -19,7 +19,6 @@ public final class ContractSQLite {
     public static class ProfileEntry implements BaseColumns {
         public static final String TABLE_NAME = "profile";
         public static final String COLUMN_NAME_TITLE = "name";
-        public static final String COLUMN_NAME_SUBTITLE = "clan";
         public static final String COLUMN_NAME_PICTURE = "photo";
     }
 
@@ -28,7 +27,6 @@ public final class ContractSQLite {
             "CREATE TABLE " + ProfileEntry.TABLE_NAME + " (" +
                     ProfileEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     ProfileEntry.COLUMN_NAME_TITLE + " TEXT NOT NULL," +
-                    ProfileEntry.COLUMN_NAME_SUBTITLE + " TEXT NOT NULL," +
                     ProfileEntry.COLUMN_NAME_PICTURE + " BLOB) ";
 
 

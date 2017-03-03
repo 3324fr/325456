@@ -1,12 +1,13 @@
 package inf8405_tp2.tp2;
 
 import android.Manifest;
+import android.app.FragmentManager;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -20,31 +21,45 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
 
-public class MapActivity extends AppCompatActivity implements
+public class MapActivity extends FragmentActivity implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        OnMapReadyCallback {
 
     private static final String TAG = "LocationActivity";
     private static final long INTERVAL = 1000 * 10;
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final int REQUEST_LOCATION = 2;
-    Button btnFusedLocation;
-    TextView tvLocation;
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
-    Location mCurrentLocation;
-    String mLastUpdateTime;
+    private static final float DEFAULT_ZOOM_STARTUP = 7.0f;
+    private Button m_btnFusedLocation;
+    private TextView m_tvLocation;
+    private LocationRequest m_LocationRequest;
+    private GoogleApiClient m_GoogleApiClient;
+    private Location m_CurrentLocation;
+    private String m_LastUpdateTime;
+    private UserFragment m_UserFragment;
+    private GoogleMap m_Map;
+    private String m_lat;
+    private String m_lng;
+    private User m_currentUser;
+    private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
 
     protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(INTERVAL);
-        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        m_LocationRequest = new LocationRequest();
+        m_LocationRequest.setInterval(INTERVAL);
+        m_LocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        m_LocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     @Override
@@ -55,39 +70,57 @@ public class MapActivity extends AppCompatActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getFragmentManager();
+        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
+
+        // create the fragment and data the first time
+        if (m_UserFragment == null) {
+            Log.d("FragInvalidMap", "OnCreate no frag profile found");
+            // add the fragment
+            m_UserFragment = new UserFragment();
+            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+            m_UserFragment.set(new User(new Profile("User Name")));
+            m_currentUser = m_UserFragment.getUser();
+        }
+
         createLocationRequest();
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
 
         setContentView(R.layout.maps);
-        tvLocation = (TextView) findViewById(R.id.tvLocation);
+        m_tvLocation = (TextView) findViewById(R.id.tvLocation);
 
-        btnFusedLocation = (Button) findViewById(R.id.btnShowLocation);
-        btnFusedLocation.setOnClickListener(new View.OnClickListener() {
+        m_btnFusedLocation = (Button) findViewById(R.id.btnShowLocation);
+        m_btnFusedLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 updateUI();
             }
         });
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     @Override
     public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart fired ..............");
-        mGoogleApiClient.connect();
+        m_GoogleApiClient.connect();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         Log.d(TAG, "onStop fired ..............");
-        mGoogleApiClient.disconnect();
-        Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
+        m_GoogleApiClient.disconnect();
+        Log.d(TAG, "isConnected ...............: " + m_GoogleApiClient.isConnected());
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -102,7 +135,7 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
+        Log.d(TAG, "onConnected - isConnected ...............: " + m_GoogleApiClient.isConnected());
         startLocationUpdates();
     }
 
@@ -112,7 +145,7 @@ public class MapActivity extends AppCompatActivity implements
         int permissionCheck = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
 
         PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+                m_GoogleApiClient, m_LocationRequest, this);
         Log.d(TAG, "Location update started ..............: ");
     }
 
@@ -129,21 +162,37 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "Firing onLocationChanged..............................................");
-        mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        m_CurrentLocation = location;
+        m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
+        if(m_currentUser!=null){
+            m_currentUser.updateLocation(m_CurrentLocation);
+        }
     }
 
-    private void updateUI() {
+    private void updateUI(){
+        updateUI(false);
+    }
+
+    private void updateUI(boolean onStartUp) {
         Log.d(TAG, "UI update initiated .............");
-        if (null != mCurrentLocation) {
-            String lat = String.valueOf(mCurrentLocation.getLatitude());
-            String lng = String.valueOf(mCurrentLocation.getLongitude());
-            tvLocation.setText("At Time: " + mLastUpdateTime + "\n" +
-                    "Latitude: " + lat + "\n" +
-                    "Longitude: " + lng + "\n" +
-                    "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
-                    "Provider: " + mCurrentLocation.getProvider());
+        if (null != m_CurrentLocation) {
+            m_lat = String.valueOf(m_CurrentLocation.getLatitude());
+            m_lng = String.valueOf(m_CurrentLocation.getLongitude());
+            m_tvLocation.setText("At Time: " + m_LastUpdateTime + "\n" +
+                    "Latitude: " + m_lat + "\n" +
+                    "Longitude: " + m_lng + "\n" +
+                    "Accuracy: " + m_CurrentLocation.getAccuracy() + "\n" +
+                    "Provider: " + m_CurrentLocation.getProvider());
+            if(m_lat != null && m_lng != null){
+                LatLng localLoc = new LatLng(Double.parseDouble(m_lat), Double.parseDouble(m_lng));
+                m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
+                if(onStartUp){
+                    float zoomLevel = DEFAULT_ZOOM_STARTUP;
+                    m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
+                }
+                m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+            }
         } else {
             Log.d(TAG, "location is null ...............");
         }
@@ -157,7 +206,7 @@ public class MapActivity extends AppCompatActivity implements
 
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+                m_GoogleApiClient, this);
         Log.d(TAG, "Location update stopped .......................");
     }
 
@@ -175,9 +224,9 @@ public class MapActivity extends AppCompatActivity implements
         } else {
             // permission has been granted, continue as usual
             Location myLocation =
-                    LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
         }
-        if (mGoogleApiClient.isConnected()) {
+        if (m_GoogleApiClient.isConnected()) {
             startLocationUpdates();
             Log.d(TAG, "Location update resumed .....................");
         }
@@ -191,10 +240,22 @@ public class MapActivity extends AppCompatActivity implements
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
                 Location myLocation =
-                        LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                        LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
             } else {
                 // Permission was denied or request was cancelled
             }
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        m_Map = googleMap;
+        updateUI();
+        // Add a marker in Sydney and move the camera
+        if(m_lat != null && m_lng != null){
+            LatLng localLoc = new LatLng(Double.parseDouble(m_lat), Double.parseDouble(m_lng));
+            m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
+            m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
         }
     }
 }

@@ -51,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private String m_UserName;
     private String m_GroupName;
 
+    private User user;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,18 +72,13 @@ public class MainActivity extends AppCompatActivity {
             m_UserFragment = new UserFragment();
             fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
 
-            m_UserFragment.setData(new User(new Profile("User Name", "Group Name")));
+            m_UserFragment.set(new User(new Profile("User Name")));
         }
-
-        m_FirebaseDatabase = FirebaseDatabase.getInstance();
-
     }
     @Override
     public void onResume(){
         super.onResume();
-        ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap( m_UserFragment.getData().profile_.picture_);
-
+        user =  m_UserFragment.getUser();
     }
 
     @Override
@@ -89,14 +87,18 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            m_UserFragment.getData().profile_.picture_ = imageBitmap;
-            m_UserFragment.getData().profile_.save(getApplicationContext());
 
+            user =  m_UserFragment.getUser();
+            user.m_profile.m_picture = imageBitmap;
+            user.m_profile.save(getApplicationContext());
+            m_UserFragment.set(user);
         }
     }//onActivityResult
 
     private void picture() {
-
+        user =  m_UserFragment.getUser();
+        ImageView mImageView = (ImageView) findViewById(R.id.picture);
+        mImageView.setImageBitmap(  user.m_profile.m_picture);
     }
 
     public void OnClickConfirm(View view) {
@@ -108,18 +110,18 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, m_UserName + m_GroupName, Toast.LENGTH_SHORT).show();
 
-        Profile profile = Profile.get(getApplicationContext(), m_UserName, m_GroupName);
+        Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
         if (profile == null) {
+            user.m_profile = new Profile(m_UserName);
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
-
-            m_UserFragment.setData(new User(new Profile(m_UserName, m_GroupName)));
-            picture();
         } else {
-            m_UserFragment.setData(new User(profile));
+            user.m_profile = profile;
+            m_UserFragment.set(user);
+            picture();
         }
     }
 
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, m_UserName + m_GroupName, Toast.LENGTH_SHORT).show();
 
-        Profile profile = Profile.get(getApplicationContext(), m_UserName, m_GroupName);
+        Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
         //m_Database = FirebaseDatabase.getInstance().getReference();
 
