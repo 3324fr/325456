@@ -14,6 +14,8 @@ public class Group {
     private List<User> m_users;
     private List<Meeting> m_meetings;
 
+    public void Group(){Group(new Manager(new User()), "");};
+
     public  void Group(Manager manager, String name){
         this.m_manager_ = manager;
         this.m_name_ = name;

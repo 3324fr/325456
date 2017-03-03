@@ -3,6 +3,7 @@ package inf8405_tp2.tp2;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -193,6 +194,31 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnClickGroup(View view) {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
+
+
+        //TODO TEST REMOVE
+        FragmentManager fm = getFragmentManager();
+        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
+        // create the fragment and data the first time
+        if (m_UserFragment == null) {
+            // add the fragment
+            m_UserFragment = new UserFragment();
+            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+            Location loc = new Location("");
+            loc.setLatitude(-40);
+            loc.setLongitude(-70);
+            Group groupTest = new Group();
+            m_UserFragment.set(groupTest);
+            m_UserFragment.getGroup().addUsers(new User(loc));
+        }
+        try {
+            m_UserFragment.getGroup().addUsers(new User());
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        //
         startActivity(intent);
     }
 

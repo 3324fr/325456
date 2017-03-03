@@ -20,6 +20,8 @@ public class User {
 
     public User(){}
 
+    public User(Location loc){m_CurrentLocation = loc;}
+
     public User(Profile profile){
         this.m_profile = profile;
     }
