@@ -12,6 +12,7 @@ public class Group {
     public String m_name_;
     public Manager m_manager_;
     private List<User> m_users;
+    private List<Meeting> m_meetings;
 
     public  void Group(Manager manager, String name){
         this.m_manager_ = manager;
@@ -28,7 +29,7 @@ public class Group {
         this.m_users.add(user);
     }
 
-    public List<User> getUsers(List<User> user){
+    public List<User> getUsers(){
         return this.m_users;
     }
 
