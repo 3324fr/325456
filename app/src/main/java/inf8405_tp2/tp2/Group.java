@@ -28,7 +28,7 @@ public class Group {
         this.m_users.add(user);
     }
 
-    public List<User> getUsers(List<User> user){
+    public List<User> getUsers(){
         return this.m_users;
     }
 

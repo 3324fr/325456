@@ -47,12 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String m_TestBody = "steakBody";
 
     private RelativeLayout m_CurrentLayout;
-
     private String m_UserName;
     private String m_GroupName;
-
     private User user;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

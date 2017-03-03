@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MapActivity extends FragmentActivity implements
@@ -41,7 +42,8 @@ public class MapActivity extends FragmentActivity implements
     private static final long INTERVAL = 1000 * 10;
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final int REQUEST_LOCATION = 2;
-    private static final float DEFAULT_ZOOM_STARTUP = 7.0f;
+    private static final float DEFAULT_ZOOM_STARTUP = 4.0f;
+    private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
     private Button m_btnFusedLocation;
     private TextView m_tvLocation;
     private LocationRequest m_LocationRequest;
@@ -53,7 +55,7 @@ public class MapActivity extends FragmentActivity implements
     private String m_lat;
     private String m_lng;
     private User m_currentUser;
-    private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
+    private Group m_Group;
 
     protected void createLocationRequest() {
         m_LocationRequest = new LocationRequest();
@@ -70,20 +72,11 @@ public class MapActivity extends FragmentActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
-        // find the retained fragment on activity restarts
-        FragmentManager fm = getFragmentManager();
-        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
 
 
         // create the fragment and data the first time
-        if (m_UserFragment == null) {
-            Log.d("FragInvalidMap", "OnCreate no frag profile found");
-            // add the fragment
-            m_UserFragment = new UserFragment();
-            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-            m_UserFragment.set(new User(new Profile("User Name")));
-            m_currentUser = m_UserFragment.getUser();
-        }
+        updateFragmentInfo();
 
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
@@ -99,13 +92,32 @@ public class MapActivity extends FragmentActivity implements
         m_btnFusedLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                updateUI();
+                updateUI(true);
             }
         });
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void updateFragmentInfo() {
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getFragmentManager();
+        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+        if (m_UserFragment == null) {
+            Log.d("FragInvalidMap", "OnCreate no frag profile found");
+            // add the fragment
+            m_UserFragment = new UserFragment();
+            if(m_UserFragment == null){
+                finish();
+            } else {
+                fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+                m_UserFragment.set(new User(new Profile("User Name")));
+                m_currentUser = m_UserFragment.getUser();
+                m_Group = m_UserFragment.getGroup();
+            }
+        }
     }
 
     @Override
@@ -192,9 +204,24 @@ public class MapActivity extends FragmentActivity implements
                     m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+                showOtherUser();
             }
         } else {
             Log.d(TAG, "location is null ...............");
+        }
+    }
+
+    private void showOtherUser() {
+        try{
+            ArrayList<User> arrayUser = new ArrayList<>(m_Group.getUsers());
+            for(User user : arrayUser){
+                Location loc = user.getM_CurrentLocation();
+                LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
+                m_Map.addMarker(new MarkerOptions().position(latLng).title("Marker in local"));
+            }
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
         }
     }
 
