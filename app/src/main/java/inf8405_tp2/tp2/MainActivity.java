@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -111,11 +112,11 @@ public class MainActivity extends AppCompatActivity {
     public void OnClickConfirm(View view) {
 
         EditText editText_userName = ((EditText) findViewById(R.id.et_username));
-        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
+        //EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         m_UserName = editText_userName.getText().toString();
-        m_GroupName = editText_group.getText().toString();
+        //m_GroupName = editText_group.getText().toString();
 
-        Toast.makeText(this, m_UserName + m_GroupName, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
 
         Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
@@ -217,28 +218,38 @@ public class MainActivity extends AppCompatActivity {
 //        m_Database.updateChildren(childUpdates);
 //    }
 
-    public void OnClickGroup(View view) {
+    public void OnClickGroup(View view){
+        m_GroupName = ((Button)view).getText().toString();
+        // TODO LOGIC for DB
+        // Create layout for all groups
+        accessGoogleMaps();
+    }
+
+    public void accessGoogleMaps() {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
 
 
         //TODO TEST REMOVE
         FragmentManager fm = getFragmentManager();
         m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-
+        Location loc = new Location("");
+        loc.setLatitude(40);
+        loc.setLongitude(-70);
         // create the fragment and data the first time
         if (m_UserFragment == null) {
             // add the fragment
             m_UserFragment = new UserFragment();
             fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-            Location loc = new Location("");
-            loc.setLatitude(-40);
-            loc.setLongitude(-70);
-            Group groupTest = new Group();
-            m_UserFragment.set(groupTest);
-            m_UserFragment.getGroup().addUsers(new User(loc));
         }
         try {
-            m_UserFragment.getGroup().addUsers(new User());
+            Group groupTest = new Group();
+            m_UserFragment.set(groupTest);
+            m_UserFragment.getGroup().resetUsers();
+            m_UserFragment.getGroup().addUsers(new User(loc));
+            loc = new Location("");
+            loc.setLatitude(60);
+            loc.setLongitude(-80);
+            m_UserFragment.getGroup().addUsers(new User(loc));
         }
         catch (NullPointerException e){
             e.printStackTrace();

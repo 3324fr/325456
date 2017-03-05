@@ -14,7 +14,7 @@ public class Group {
     private List<User> m_users;
     private List<Meeting> m_meetings;
 
-    public void Group(){Group(new Manager(new User()), "");};
+    public void Group(){Group(new Manager(new User()), "");}
 
     public  void Group(Manager manager, String name){
         this.m_manager_ = manager;
@@ -33,6 +33,10 @@ public class Group {
 
     public List<User> getUsers(){
         return this.m_users;
+    }
+
+    public void resetUsers(){
+        this.m_users = new ArrayList<>();
     }
 
     public void setUsers(List<User> users){

@@ -2,7 +2,7 @@
     <string name="app_name">Tp2</string>
     <string name="username">Username</string>
     <string name="enter_your_username">Enter your username</string>
-    <string name="confirm">Confirm</string>
+    <string name="confirm">Confirm Username</string>
     <string name="join_or_create_group">Join or Create Group</string>
     <string name="cancel">Cancel</string>
     <string name="edit_me">Edit Me</string>
