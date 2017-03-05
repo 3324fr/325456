@@ -7,16 +7,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
+
 import java.io.ByteArrayOutputStream;
 
 
 /**
  * Created by 422234 on 2017-02-17.
  */
-
+@IgnoreExtraProperties
 public class Profile {
 
     public String m_name;
+    @Exclude
     public Bitmap m_picture;
 
 
@@ -25,10 +29,10 @@ public class Profile {
         m_picture = picture;
     }
 
-    public Profile(String name) {
-        m_name = name;
+    public Profile() {
     }
 
+    @Exclude
     public void save(Context context) {
 
         DatabaseHelper helper = new DatabaseHelper(context);
@@ -47,7 +51,7 @@ public class Profile {
         db.close();
 
     }
-
+    @Exclude
     public static Profile get(Context context, String name) {
 
         DatabaseHelper helper = new DatabaseHelper(context);

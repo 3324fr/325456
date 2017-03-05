@@ -5,18 +5,19 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.util.Log;
 
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
+
 import java.util.ArrayList;
 
 /**
  * Created by 422234 on 2017-02-17.
  */
-
+@IgnoreExtraProperties
 public class User {
 
     public Profile m_profile;
-    public Group m_group;
     private Location m_CurrentLocation;
-    private ArrayList<User> m_ListUser;
 
     public User(){}
 
@@ -30,11 +31,12 @@ public class User {
         this(user.m_profile);
     }
 
+    @Exclude
     protected void updateLocation(Location loc){
         m_CurrentLocation = loc;
         Log.d("NewLoc", loc.getLatitude() + "");
     }
-
+    @Exclude
     protected void updateOtherLocation(){
 
     }

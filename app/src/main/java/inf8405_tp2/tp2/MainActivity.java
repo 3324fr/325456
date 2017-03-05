@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference m_UserRef;
 
     public final static String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
+    public final static String EXTRA_USER = "inf8405_tp2.tp2.ExtraUser";
+    public final static String EXTRA_GROUP = "inf8405_tp2.tp2.ExtraGroup";
 
     private static final String TAG = "NewPostActivity";
     private static final String REQUIRED = "Required";
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             m_UserFragment = new UserFragment();
             fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
 
-            m_UserFragment.set(new User(new Profile("User Name")));
+            m_UserFragment.set(new User(new Profile()));
         }
 
         m_FirebaseDatabase = FirebaseDatabase.getInstance();
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         Profile profile = Profile.get(getApplicationContext(), m_UserName);
 
         if (profile == null) {
-            user.m_profile = new Profile(m_UserName);
+            user.m_profile = new Profile();
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
@@ -131,6 +133,18 @@ public class MainActivity extends AppCompatActivity {
             m_UserFragment.set(user);
             picture();
         }
+    }
+
+    public  void OnclickCalendar(View view){
+        Intent intent = new Intent(this, CalendarActivity.class);
+        intent.putExtra(m_UserName, EXTRA_USER);
+        intent.putExtra(m_GroupName, EXTRA_GROUP);
+        startActivity(intent);
+
+    }
+    public  void OnclickPreferences(View view){
+        Intent intent = new Intent(this, PreferencesActivity.class);
+        startActivity(intent);
     }
 
     public void OnClickLogin(View view) {
