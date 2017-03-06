@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.FragmentManager;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -75,9 +77,6 @@ public class MapActivity extends FragmentActivity implements
 
 
 
-        // create the fragment and data the first time
-        updateFragmentInfo();
-
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -99,8 +98,14 @@ public class MapActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        // create the fragment and data the first time
+        updateFragmentInfo();
+
     }
 
+
+    // TODO REMOVE THIS TEST METHOD
     private void updateFragmentInfo() {
         // find the retained fragment on activity restarts
 
@@ -218,14 +223,20 @@ public class MapActivity extends FragmentActivity implements
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
                 showOtherUser();
+                showEventInfo();
             }
         } else {
             Log.d(TAG, "location is null ...............");
         }
     }
 
+    private void showEventInfo() {
+        //TODO SHOW EACH EVENT WITH A DIFFERENT MARKER
+    }
+
     private void showOtherUser() {
         try{
+            getOtherUserInfo();
             ArrayList<User> arrayUser = new ArrayList<>(m_Group.getUsers());
             for(User user : arrayUser){
                 Location loc = user.getM_CurrentLocation();
@@ -236,6 +247,10 @@ public class MapActivity extends FragmentActivity implements
         catch (NullPointerException e){
             e.printStackTrace();
         }
+    }
+
+    private void getOtherUserInfo() {
+        //TODO GET DB
     }
 
     @Override
@@ -278,9 +293,11 @@ public class MapActivity extends FragmentActivity implements
         if (requestCode == REQUEST_LOCATION) {
             if(grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // We can now safely use the API we requested access to
-                Location myLocation =
-                        LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+                if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+
+                    // We can now safely use the API we requested access to
+                    Location myLocation = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+                }
             } else {
                 // Permission was denied or request was cancelled
             }
@@ -297,5 +314,20 @@ public class MapActivity extends FragmentActivity implements
             m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
             m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
         }
+
+        m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
+            @Override
+            public void onMapLongClick (LatLng latLng) {
+
+                MarkerOptions marker = new MarkerOptions().position(
+                        new LatLng(latLng.latitude, latLng.longitude)).title("New Marker");
+
+                m_Map.addMarker(marker);
+
+                System.out.println(latLng.latitude+"---"+ latLng.longitude);
+
+            }
+        });
     }
 }
