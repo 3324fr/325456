@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="16dp"
     android:orientation="vertical"
     android:scrollbars="vertical">
-
-    <CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"/>
 
     <TextView
         android:id="@+id/hello"
@@ -18,9 +14,25 @@
         android:text=""
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <TimePicker
-        android:id="@+id/time_picker1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_startHour"
+        android:onClick="OnStartHourClicked"
+        android:text="button" />
+
+    <Button
+        android:text="Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="OnEndHourClicked"
+        android:id="@+id/btn_sta" />
+
+    <Button
+        android:text="Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_date"
+        android:onClick="OnDateClicked" />
 
 </LinearLayout>

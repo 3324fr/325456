@@ -50,7 +50,6 @@ public class MapActivity extends FragmentActivity implements
     private GoogleApiClient m_GoogleApiClient;
     private Location m_CurrentLocation;
     private String m_LastUpdateTime;
-    private UserFragment m_UserFragment;
     private GoogleMap m_Map;
     private String m_lat;
     private String m_lng;
@@ -105,32 +104,32 @@ public class MapActivity extends FragmentActivity implements
         // find the retained fragment on activity restarts
 
         //TODO TEST REMOVE
-        FragmentManager fm = getFragmentManager();
-        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-        Location loc = new Location("");
-        loc.setLatitude(40);
-        loc.setLongitude(-70);
-        // create the fragment and data the first time
-        if (m_UserFragment == null) {
-            // add the fragment
-            m_UserFragment = new UserFragment();
-            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-        }
-        try {
-            Group groupTest = new Group();
-            m_UserFragment.set(groupTest);
-            m_UserFragment.getGroup().resetUsers();
-            m_UserFragment.getGroup().addUsers(new User(loc));
-            loc = new Location("");
-            loc.setLatitude(60);
-            loc.setLongitude(-80);
-            m_UserFragment.getGroup().addUsers(new User(loc));
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        m_currentUser = m_UserFragment.getUser();
-        m_Group = m_UserFragment.getGroup();
+//        FragmentManager fm = getFragmentManager();
+//        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+//        Location loc = new Location("");
+//        loc.setLatitude(40);
+//        loc.setLongitude(-70);
+//        // create the fragment and data the first time
+//        if (m_UserFragment == null) {
+//            // add the fragment
+//            m_UserFragment = new UserFragment();
+//            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+//        }
+//        try {
+//            Group groupTest = new Group();
+//            m_UserFragment.set(groupTest);
+//            m_UserFragment.getGroup().resetUsers();
+//            m_UserFragment.getGroup().addUsers(new User(loc));
+//            loc = new Location("");
+//            loc.setLatitude(60);
+//            loc.setLongitude(-80);
+//            m_UserFragment.getGroup().addUsers(new User(loc));
+//        }
+//        catch (NullPointerException e){
+//            e.printStackTrace();
+//        }
+//        m_currentUser = m_UserFragment.getUser();
+//        m_Group = m_UserFragment.getGroup();
     }
 
     @Override

@@ -1,17 +1,24 @@
 package inf8405_tp2.tp2;
 
-import android.app.FragmentManager;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.location.Location;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -24,121 +31,86 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import inf8405_tp2.tp2.user.NewPostActivity;
-import inf8405_tp2.tp2.user.Post;
-
 
 public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
-
-    private UserFragment m_UserFragment;
-
-    private FirebaseDatabase m_FirebaseDatabase;
-    private DatabaseReference m_UserRef;
-
     public final static String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
-    public final static String EXTRA_USER = "inf8405_tp2.tp2.ExtraUser";
-    public final static String EXTRA_GROUP = "inf8405_tp2.tp2.ExtraGroup";
 
-    private static final String TAG = "NewPostActivity";
-    private static final String REQUIRED = "Required";
-    private static final String m_TestUserId = "steakUser";
-    private static final String m_TestTitle = "steakTitle";
-    private static final String m_TestBody = "steakBody";
-
-    private RelativeLayout m_CurrentLayout;
-    private String m_UserName;
-    private String m_GroupName;
-    private User user;
-
-    private String exampleUser = "id\n" +
-            "{\t\n" +
-            "\"userName\" : \"val\",\n" +
-            "\"picture\" : \"link\",\n" +
-            "\"groupe\" : [\"gr\",\"gr2\"]\n" +
-            "}";
+    private DialogFragment m_userFragment;
+    private Profile m_profile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        m_CurrentLayout = (RelativeLayout) findViewById(R.id.activity_main);
-        EditText editTextPrice = (EditText) findViewById(R.id.et_username);
-        editTextPrice.addTextChangedListener(new GenericTextWatcher(editTextPrice));
 
-        // find the retained fragment on activity restarts
-        FragmentManager fm = getFragmentManager();
-        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
 
-        // create the fragment and data the first time
-        if (m_UserFragment == null) {
-            // add the fragment
-            m_UserFragment = new UserFragment();
-            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-
-            m_UserFragment.set(new User(new Profile()));
-        }
-
-        m_FirebaseDatabase = FirebaseDatabase.getInstance();
     }
+
     @Override
     public void onResume(){
         super.onResume();
-        user =  m_UserFragment.getUser();
-    }
+        UserSingleton userS= UserSingleton.getInstance(getApplicationContext());
 
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getSupportFragmentManager();
+        m_userFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
+        // create the fragment and data the first time
+        if (m_userFragment == null && !userS.isLogin()) {
+            // add the fragment
+            m_userFragment = new UserFragment();
+            fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
+        }
+
+        m_profile = userS.getUserProfile();
+        Toast.makeText(this, m_profile.m_name, Toast.LENGTH_SHORT).show();
+        picture();
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-
-            user =  m_UserFragment.getUser();
-            user.m_profile.m_picture = imageBitmap;
-            user.m_profile.save(getApplicationContext());
-            m_UserFragment.set(user);
+            m_profile.m_picture = imageBitmap;
+            UserSingleton.getInstance(getApplicationContext()).setM_user(m_profile);
+            picture();
         }
     }//onActivityResult
 
     private void picture() {
-        user =  m_UserFragment.getUser();
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap(  user.m_profile.m_picture);
+        mImageView.setImageBitmap(  m_profile.m_picture);
     }
 
-    public void OnClickConfirm(View view) {
+    public void OnClickConfirm(String username) {
 
-        EditText editText_userName = ((EditText) findViewById(R.id.et_username));
-        //EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
-        m_UserName = editText_userName.getText().toString();
-        //m_GroupName = editText_group.getText().toString();
+        if(!username.isEmpty()) {
+            UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
+            Toast.makeText(this, getString(R.string.hello)+ username, Toast.LENGTH_SHORT).show();
+            Profile profile = userS.getUserProfile(username);
 
-        Toast.makeText(this, m_UserName, Toast.LENGTH_SHORT).show();
-
-        Profile profile = Profile.get(getApplicationContext(), m_UserName);
-
-        if (profile == null) {
-            user.m_profile = new Profile();
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            if (profile == null) {
+                m_profile = new Profile();
+                m_profile.m_name = username;
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                }
+            } else {
+                m_profile = profile;
+                picture();
             }
-        } else {
-            user.m_profile = profile;
-            m_UserFragment.set(user);
-            picture();
+            m_userFragment.dismiss();
         }
     }
 
     public  void OnclickCalendar(View view){
         Intent intent = new Intent(this, CalendarActivity.class);
-        intent.putExtra(m_UserName, EXTRA_USER);
-        intent.putExtra(m_GroupName, EXTRA_GROUP);
+//        intent.putExtra(m_UserName, EXTRA_USER);
+//        intent.putExtra(m_GroupName, EXTRA_GROUP);
         startActivity(intent);
 
     }
@@ -149,150 +121,111 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnClickLogin(View view) {
 
-        EditText editText_userName = ((EditText) findViewById(R.id.et_username));
-        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
-        String m_UserName = editText_userName.getText().toString();
-        String m_GroupName = editText_group.getText().toString();
 
-        Toast.makeText(this, m_UserName + m_GroupName, Toast.LENGTH_SHORT).show();
-
-        Profile profile = Profile.get(getApplicationContext(), m_UserName);
-
-        m_UserRef = m_FirebaseDatabase.getReference(m_UserName);
-
-
-
-        m_UserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is: " + value);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
 
         //m_Database = FirebaseDatabase.getInstance().getReference();
 
     }
 
-//    private void submitPost() {
-//        Toast.makeText(this, "Posting...", Toast.LENGTH_SHORT).show();
-//
-//        // [START single_value_read]
-//        //final String userId = getUid();
-//        m_FirebaseDatabase.child("users").child("").addListenerForSingleValueEvent(
-//                new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(DataSnapshot dataSnapshot) {
-//                        // Get user value
-//                        User user = dataSnapshot.getValue(User.class);
-//
-//                        // [START_EXCLUDE]
-//                        if (user == null) {
-//                            // User is null, error out
-//                            Log.e(TAG, "User " + m_TestUserId + " is unexpectedly null");
-//                            Toast.makeText(MainActivity.this,
-//                                    "Error: could not fetch user.",
-//                                    Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            // Write new post
-//                            writeNewPost(m_TestUserId, m_UserName, m_TestTitle, m_TestBody);
-//                        }
-//
-//                        finish();
-//                        // [END_EXCLUDE]
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(DatabaseError databaseError) {
-//                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-//                    }
-//                });
-//        // [END single_value_read]
-//    }
-//
-//    private void writeNewPost(String userId, String username, String title, String body) {
-//        // Create new post at /user-posts/$userid/$postid and at
-//        // /posts/$postid simultaneously
-//        String key = m_Database.child("posts").push().getKey();
-//        Post post = new Post(userId, username, title, body);
-//        Map<String, Object> postValues = post.toMap();
-//
-//        Map<String, Object> childUpdates = new HashMap<>();
-//        childUpdates.put("/posts/" + key, postValues);
-//        childUpdates.put("/user-posts/" + userId + "/" + key, postValues);
-//
-//        m_Database.updateChildren(childUpdates);
-//    }
 
     public void OnClickGroup(View view){
-        m_GroupName = ((Button)view).getText().toString();
-        // TODO LOGIC for DB
-        // Create layout for all groups
-        accessGoogleMaps();
+        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
+
+        String groupName = editText_group.getText().toString();
+        UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
+        userS.setM_group(groupName);
     }
 
     public void accessGoogleMaps() {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
 
 
-        //TODO TEST REMOVE
-        FragmentManager fm = getFragmentManager();
-        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-        Location loc = new Location("");
-        loc.setLatitude(40);
-        loc.setLongitude(-70);
-        // create the fragment and data the first time
-        if (m_UserFragment == null) {
-            // add the fragment
-            m_UserFragment = new UserFragment();
-            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-        }
-        try {
-            Group groupTest = new Group();
-            m_UserFragment.set(groupTest);
-            m_UserFragment.getGroup().resetUsers();
-            m_UserFragment.getGroup().addUsers(new User(loc));
-            loc = new Location("");
-            loc.setLatitude(60);
-            loc.setLongitude(-80);
-            m_UserFragment.getGroup().addUsers(new User(loc));
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        //
-        startActivity(intent);
+//        //TODO TEST REMOVE
+//        FragmentManager fm = getFragmentManager();
+//        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+//        Location loc = new Location("");
+//        loc.setLatitude(40);
+//        loc.setLongitude(-70);
+//        // create the fragment and data the first time
+//        if (m_UserFragment == null) {
+//            // add the fragment
+//            m_UserFragment = new UserFragment();
+//            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
+//        }
+//        try {
+//            Group groupTest = new Group();
+//            m_UserFragment.set(groupTest);
+//            m_UserFragment.getGroup().resetUsers();
+//            m_UserFragment.getGroup().addUsers(new User(loc));
+//            loc = new Location("");
+//            loc.setLatitude(60);
+//            loc.setLongitude(-80);
+//            m_UserFragment.getGroup().addUsers(new User(loc));
+//        }
+//        catch (NullPointerException e){
+//            e.printStackTrace();
+//        }
+//        //
+//        startActivity(intent);
     }
 
-    private class GenericTextWatcher implements TextWatcher {
 
-        private View view;
+    public static class UserFragment extends DialogFragment  {
+        static UserFragment newInstance() {
+            return new UserFragment();
+        }
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
 
-        private GenericTextWatcher(View view) {
-            this.view = view;
+            View v = inflater.inflate(R.layout.fragment_user, container, false);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+                    android.R.layout.simple_dropdown_item_1line, UserSingleton.getInstance(getContext()).getAllUsername());
+            final AutoCompleteTextView textView = (AutoCompleteTextView)
+                    v.findViewById(R.id.editText_username);
+            textView.setAdapter(adapter);
+
+
+            // Show soft keyboard automatically
+            textView.requestFocus();
+
+            // Watch for button clicks.
+            Button button = (Button)v.findViewById(R.id.btn_username);
+            button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    String username = textView.getText().toString();
+                    // When button is clicked, call up to owning activity.
+                    ((MainActivity)getActivity()).OnClickConfirm(username);
+                }
+            });
+
+            this.getDialog().setCanceledOnTouchOutside(false);
+
+            return v;
         }
 
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        // this method is only called once for this fragment
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            // retain this fragment
+            setRetainInstance(true);
         }
 
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            switch (view.getId()) {
-                case R.id.et_username:
-                    break;
-                case R.id.et_groupname:
-                    break;
-            }
+        @Override
+        public void onDestroyView()
+        {
+            Dialog dialog = getDialog();
+
+            // Work around bug: http://code.google.com/p/android/issues/detail?id=17423
+            if ((dialog != null) && getRetainInstance())
+                dialog.setDismissMessage(null);
+
+            super.onDestroyView();
         }
-        public void afterTextChanged(Editable editable) {
-        }
-    }
+
+
+
+}
 
 }
