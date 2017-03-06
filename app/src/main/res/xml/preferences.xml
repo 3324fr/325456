@@ -6,4 +6,10 @@
         android:title="@string/use_fingerprint_to_authenticate_title"
         android:persistent="true"
         android:defaultValue="true" />
+    <EditTextPreference
+        android:key="edittext_preference"
+        android:title="rtrt"
+        android:summary="rthe"
+        android:dialogTitle="rth"
+    android:numeric="integer"/>
 </PreferenceScreen>

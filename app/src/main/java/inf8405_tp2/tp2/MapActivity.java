@@ -52,7 +52,6 @@ public class MapActivity extends FragmentActivity implements
     private GoogleApiClient m_GoogleApiClient;
     private Location m_CurrentLocation;
     private String m_LastUpdateTime;
-    private UserFragment m_UserFragment;
     private GoogleMap m_Map;
     private String m_lat;
     private String m_lng;
@@ -74,9 +73,6 @@ public class MapActivity extends FragmentActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
-
-
-
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -98,44 +94,6 @@ public class MapActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        // create the fragment and data the first time
-        updateFragmentInfo();
-
-    }
-
-
-    // TODO REMOVE THIS TEST METHOD
-    private void updateFragmentInfo() {
-        // find the retained fragment on activity restarts
-
-        //TODO TEST REMOVE
-        FragmentManager fm = getFragmentManager();
-        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-        Location loc = new Location("");
-        loc.setLatitude(40);
-        loc.setLongitude(-70);
-        // create the fragment and data the first time
-        if (m_UserFragment == null) {
-            // add the fragment
-            m_UserFragment = new UserFragment();
-            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-        }
-        try {
-            Group groupTest = new Group();
-            m_UserFragment.set(groupTest);
-            m_UserFragment.getGroup().resetUsers();
-            m_UserFragment.getGroup().addUsers(new User(loc));
-            loc = new Location("");
-            loc.setLatitude(60);
-            loc.setLongitude(-80);
-            m_UserFragment.getGroup().addUsers(new User(loc));
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        m_currentUser = m_UserFragment.getUser();
-        m_Group = m_UserFragment.getGroup();
     }
 
     @Override
@@ -237,12 +195,7 @@ public class MapActivity extends FragmentActivity implements
     private void showOtherUser() {
         try{
             getOtherUserInfo();
-            ArrayList<User> arrayUser = new ArrayList<>(m_Group.getUsers());
-            for(User user : arrayUser){
-                Location loc = user.getM_CurrentLocation();
-                LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
-                m_Map.addMarker(new MarkerOptions().position(latLng).title("Marker in local"));
-            }
+
         }
         catch (NullPointerException e){
             e.printStackTrace();
@@ -251,6 +204,13 @@ public class MapActivity extends FragmentActivity implements
 
     private void getOtherUserInfo() {
         //TODO GET DB
+        //m_Group.getUsers()
+        ArrayList<User> arrayUser = new ArrayList<>();
+        for(User user : arrayUser){
+            Location loc = user.getM_CurrentLocation();
+            LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
+            m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
+        }
     }
 
     @Override

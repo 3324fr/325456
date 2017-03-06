@@ -17,4 +17,7 @@
     <string name="calendar">Calendar</string>
     <string name="use_fingerprint_to_authenticate_key">use_fingerprint_to_authenticate_key</string>
     <string name="use_fingerprint_to_authenticate_title">use_fingerprint_to_authenticate_title</string>
+    <string name="pref_summary_delete_limit">z</string>
+    <string name="pref_title_sms_delete">asfasf</string>
+    <string name="hello">"Hello "</string>
 </resources>

@@ -9,8 +9,11 @@ import android.graphics.BitmapFactory;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -30,33 +33,27 @@ public class Profile {
     }
 
     public Profile() {
+        m_name = "";
     }
 
     @Exclude
-    public void save(Context context) {
-
-        DatabaseHelper helper = new DatabaseHelper(context);
-
-        SQLiteDatabase db = helper.getWritableDatabase();
-
+    public void save(SQLiteDatabase db,StorageReference pictureRef ) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         m_picture.compress(Bitmap.CompressFormat.PNG, 0, stream);
+
+        byte[] data = stream.toByteArray();
 
         // Create insert entries
         ContentValues values = new ContentValues();
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, m_name);
-        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, stream.toByteArray());
-        long newRowId = db.insert(ContractSQLite.ProfileEntry.TABLE_NAME, null, values);
+        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, data);
+        db.insert(ContractSQLite.ProfileEntry.TABLE_NAME, null, values);
 
-        db.close();
+        pictureRef.child(m_name).putBytes(data);
 
     }
     @Exclude
-    public static Profile get(Context context, String name) {
-
-        DatabaseHelper helper = new DatabaseHelper(context);
-
-        SQLiteDatabase db = helper.getReadableDatabase();
+    public static Profile get(SQLiteDatabase db, String name) {
 
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
@@ -90,8 +87,28 @@ public class Profile {
             profile = new Profile(cursor.getString(1), bitmap);
         }
 
-        db.close();
         return profile;
+    }
+
+    @Exclude
+    public static final String[] getAllUsername(SQLiteDatabase db){
+
+
+        Cursor  cursor = db.rawQuery("SELECT DISTINCT " +
+                ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " FROM "
+                + ContractSQLite.ProfileEntry.TABLE_NAME ,null);
+        List<String>  username = new ArrayList<>();
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                String name = cursor.getString(cursor.getColumnIndex(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE));
+
+                username.add(name);
+                cursor.moveToNext();
+            }
+        }
+
+        return username.toArray(new String[0]);
+
     }
 
 }
