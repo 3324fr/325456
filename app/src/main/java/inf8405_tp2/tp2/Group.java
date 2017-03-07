@@ -1,6 +1,7 @@
 package inf8405_tp2.tp2;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -25,27 +26,24 @@ public class Group {
     }
 
     public  Group(Manager manager, String name){
+        super();
         if(name.isEmpty()){
             name = "default";
         }
         this.m_manager = manager;
         this.m_name = name;
-        this.m_users =  new ArrayList<>();
-    }
 
-    @Exclude
-    public void setUsers(User user){
-        this.m_users.clear();
-        this.m_users.add(user);
     }
 
     @Exclude
     public Boolean addUsers(User user){
-        if(this.m_users.contains(user)) {
+        if(this.getUsers().contains(user)) {
+            Log.d("newUserSingle", "Re instzcscasasantiation of ourInstance");
             return false;
         }
         else{
             this.m_users.add(user);
+            Log.d("newUserSingle", "Re instantiaxxxxxxxxxxxxxxxxxxxxxtion of ourInstance");
             return true;
         }
     }

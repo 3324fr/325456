@@ -145,15 +145,15 @@ public class UserSingleton {
             groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    UserSingleton.m_group = dataSnapshot.getValue(Group.class);
+                    Group group = dataSnapshot.getValue(Group.class);
 
-                    if (UserSingleton.m_group == null) {
+                    if (group == null) {
                         Manager manager = new Manager(UserSingleton.m_user);
-                        UserSingleton.m_group = new Group(manager, groupName);
+                        group = new Group(manager, groupName);
                         m_user = manager;
-                        groupRef.setValue(UserSingleton.m_group);
+                        groupRef.setValue(group);
                     } else {
-                        if (UserSingleton.m_group.addUsers(UserSingleton.m_user)) {
+                        if (group.addUsers(UserSingleton.m_user)) {
                             groupRef.setValue(UserSingleton.m_group);
                         }
                     }

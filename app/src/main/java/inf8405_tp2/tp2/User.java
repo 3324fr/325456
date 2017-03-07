@@ -54,7 +54,7 @@ public class User {
         User that = (User) other;
 
         // Custom equality check here.
-        return this.m_profile.equals(that.m_profile);
+        return this.m_profile == that.m_profile;
     }
 
 }
