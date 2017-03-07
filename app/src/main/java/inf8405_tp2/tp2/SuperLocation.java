@@ -8,7 +8,7 @@ import android.location.LocationManager;
  */
 
 public class SuperLocation extends Location {
-    protected SuperLocation(){
+    public SuperLocation(){
         super(LocationManager.GPS_PROVIDER);
     }
 }

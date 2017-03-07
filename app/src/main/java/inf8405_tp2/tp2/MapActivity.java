@@ -160,7 +160,7 @@ public class MapActivity extends FragmentActivity implements
         m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
         if(m_currentUser!=null){
-            m_currentUser.updateLocation(m_CurrentLocation);
+            m_currentUser.setCurrentLocation(m_CurrentLocation);
         }
     }
 
@@ -186,11 +186,10 @@ public class MapActivity extends FragmentActivity implements
                     m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
-                ourInstance.setLocation(localLoc);
+                ourInstance.setUserLocation(m_CurrentLocation);
                 showOtherUser();
                 showEventInfo();
-                // TODO TEST REMOVE
-                ourInstance.getLocation(ourInstance.getM_user());
+
             }
         } else {
             Log.d(TAG, "location is null ...............");
@@ -218,7 +217,7 @@ public class MapActivity extends FragmentActivity implements
         //TODO TEST
         ArrayList<User> arrayUser = new ArrayList<>();
         for(User user : arrayUser){
-            Location loc = user.getM_CurrentLocation();
+            Location loc = user.getCurrentLocation();
             LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
             m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
         }

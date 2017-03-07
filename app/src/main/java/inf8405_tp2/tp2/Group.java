@@ -60,12 +60,12 @@ public class Group {
     @Exclude
     public Boolean updateLoc(User user,Location loc){
         if(user == m_manager){
-            m_manager.setM_CurrentLocation(loc);
+            m_manager.setCurrentLocation(loc);
             return true;
         }
         else if(m_users.contains(user)) {
             m_users.get(m_users.indexOf(user))
-                    .setM_CurrentLocation(loc);
+                    .setCurrentLocation(loc);
             return true;
         }
         return false;
@@ -74,10 +74,10 @@ public class Group {
     @Exclude
     public Location getLocation(User user){
         if(user == m_manager){
-            return m_manager.getLocation();
+            return m_manager.getCurrentLocation();
         }
         else if(m_users.contains(user)) {
-            return m_users.get(m_users.indexOf(user)).getLocation();
+            return m_users.get(m_users.indexOf(user)).getCurrentLocation();
         }
         return null;
     }

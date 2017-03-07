@@ -36,11 +36,11 @@ public class User {
         this(user.m_profile);
     }
     @Exclude
-    public Location getM_CurrentLocation() {
+    public Location getCurrentLocation() {
         return m_CurrentLocation;
     }
     @Exclude
-    public void setM_CurrentLocation(Location loc){
+    public void setCurrentLocation(Location loc){
         this.m_CurrentLocation = (SuperLocation) loc;
 
         Log.d("NewLoc", loc.getLatitude() + "");

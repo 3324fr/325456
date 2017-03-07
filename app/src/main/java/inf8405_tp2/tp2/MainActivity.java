@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
         String groupName = editText_group.getText().toString();
         UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
-        userS.setM_group(groupName);
+        userS.addUser2Group(groupName);
     }
 
     public void OnClickGMap(View view) {
