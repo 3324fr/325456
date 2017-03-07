@@ -18,29 +18,30 @@ import java.util.ArrayList;
 public class User {
 
     public Profile m_profile;
-    public double m_longitude;
-    public double m_latitude;
 
+    public SuperLocation m_CurrentLocation;
 
     public User(){
         this.m_profile = new Profile();
-
-
+        this.m_CurrentLocation = new SuperLocation();
     }
 
-
     public User(Profile profile){
+        this();
         this.m_profile = profile;
+
     }
 
     protected User(User user){
         this(user.m_profile);
     }
-
     @Exclude
-    protected void updateLocation(Location loc){
-        this.m_longitude = loc.getLongitude();
-        this.m_latitude = loc.getLatitude();
+    public Location getM_CurrentLocation() {
+        return m_CurrentLocation;
+    }
+    @Exclude
+    public void setM_CurrentLocation(Location loc){
+        this.m_CurrentLocation = (SuperLocation) loc;
 
         Log.d("NewLoc", loc.getLatitude() + "");
     }
@@ -53,14 +54,7 @@ public class User {
         User that = (User) other;
 
         // Custom equality check here.
-        return this.m_profile.m_name.equals(that.m_profile.m_name);
+        return this.m_profile.equals(that.m_profile);
     }
 
-
-    public Location getM_CurrentLocation() {
-        Location temp = new Location(LocationManager.GPS_PROVIDER);
-        temp.setLatitude(m_latitude);
-        temp.setLongitude(m_longitude);
-        return temp;
-    }
 }

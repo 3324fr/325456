@@ -8,11 +8,9 @@ import com.google.firebase.database.Exclude;
 
 public class Manager extends User {
 
-    public Manager() {}
-
-
-
-
+    public Manager() {
+        super();
+    }
     public Manager(User user) {
         super(user);
     }

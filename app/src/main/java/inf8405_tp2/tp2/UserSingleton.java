@@ -3,8 +3,13 @@ package inf8405_tp2.tp2;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.support.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,6 +46,7 @@ public class UserSingleton {
             m_user = new User();
             m_sqLitehelper = new DatabaseHelper(context.getApplicationContext());
             m_FirebaseStorage = FirebaseStorage.getInstance();
+            FirebaseAuth.getInstance().signInAnonymously();
             m_FirebaseDatabase = FirebaseDatabase.getInstance();
             m_UserPictureRef = m_FirebaseStorage.getReference("UserPic");
             m_GroupRef = m_FirebaseDatabase.getReference("Group's list");
@@ -53,16 +59,53 @@ public class UserSingleton {
         m_Ctx = context;
     }
 
-
     public Boolean isLogin(){
         return m_isLogin;
     }
 
     public String[] getAllUsername() {
+        SQLiteDatabase db_read =  UserSingleton.m_sqLitehelper.getReadableDatabase();
+        final List<String> listSQLite =  Profile.getAllUsername(db_read);
+        db_read.close();
+        m_GroupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        final Group group = postSnapshot.getValue(Group.class);
+                        for (User user : group.getUsers()) {
+                            final String profileName = user.m_profile.m_name;
+                            if (!listSQLite.contains(profileName)) {
+                                m_UserPictureRef.child(profileName).getBytes(Long.MAX_VALUE)
+                                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                            @Override
+                                            public void onSuccess(byte[] bytes) {
+                                                // Use the bytes to display the image
+                                                Bitmap bitmap = BitmapFactory
+                                                        .decodeByteArray(bytes, 0, bytes.length);
+                                                Profile profile = new Profile(profileName, bitmap);
+                                                SQLiteDatabase db_write =
+                                                        UserSingleton.m_sqLitehelper
+                                                                .getWritableDatabase();
+                                                profile.save(db_write);
+                                                db_write.close();
+                                            }
+                                        });
+                            }
+                        }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                System.out.println("The getAllUsername read failed: " + databaseError.getCode());
+            }
+        });
+
         SQLiteDatabase db =  UserSingleton.m_sqLitehelper.getReadableDatabase();
-        String[] list =  Profile.getAllUsername(db);
+        List<String> returnList =  Profile.getAllUsername(db);
         db.close();
-        return list;
+
+        return returnList.toArray(new String[0]);
     }
 
     public Profile getUserProfile(String username){
@@ -84,9 +127,6 @@ public class UserSingleton {
         return m_user;
     }
 
-    public static Group getM_group() {
-        return m_group;
-    }
 
     public void setM_user(Profile profile) {
         UserSingleton.m_isLogin = true;
@@ -96,47 +136,54 @@ public class UserSingleton {
         UserSingleton.m_user.m_profile = profile;
     }
 
-    public void setM_group(final String groupName) {
-        final DatabaseReference groupRef =  m_GroupRef.child(groupName);
-        // Attach a listener to read the data at our posts reference
-        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                UserSingleton.m_group = dataSnapshot.getValue(Group.class);
+    public void addUser2Group(final String groupName) {
+        if(!groupName.isEmpty()) {
+            final DatabaseReference groupRef = m_GroupRef.child(groupName);
+            // Attach a listener to read the data at our posts reference
+            groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    UserSingleton.m_group = dataSnapshot.getValue(Group.class);
 
-                if(UserSingleton.m_group == null){
-                    Manager manager = new Manager(UserSingleton.m_user);
-                    UserSingleton.m_group = new Group(manager, groupName);
-                    m_user = manager;
-                    groupRef.setValue(UserSingleton.m_group);
-                }
-                else {
-                    if(UserSingleton.m_group.addUsers(UserSingleton.m_user)) {
+                    if (UserSingleton.m_group == null) {
+                        Manager manager = new Manager(UserSingleton.m_user);
+                        UserSingleton.m_group = new Group(manager, groupName);
+                        m_user = manager;
                         groupRef.setValue(UserSingleton.m_group);
+                    } else {
+                        if (UserSingleton.m_group.addUsers(UserSingleton.m_user)) {
+                            groupRef.setValue(UserSingleton.m_group);
+                        }
                     }
                 }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("The read failed: " + databaseError.getCode());
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    System.out.println("The read failed: " + databaseError.getCode());
+                }
+            });
 
-        groupRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                UserSingleton.m_group = dataSnapshot.getValue(Group.class);
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("The read failed: " + databaseError.getCode());
-            }
-        });
+            groupRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    UserSingleton.m_group = dataSnapshot.getValue(Group.class);
+                }
 
-    }
-    public void setLocation(Location loc) {
-        if(m_group.updateLoc(m_user,loc)){
-        m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    System.out.println("The read failed: " + databaseError.getCode());
+                }
+            });
         }
     }
+    public void setUserLocation(final Location loc) {
+        if(m_group.updateLoc(m_user,loc)){
+            m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
+        }
+    }
+
+    public static DatabaseReference getmGroupref() {
+        return m_GroupRef;
+    }
+
 }
+

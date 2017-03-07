@@ -1,7 +1,6 @@
 package inf8405_tp2.tp2;
 
 import android.Manifest;
-import android.app.FragmentManager;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -73,10 +72,6 @@ public class MapActivity extends FragmentActivity implements
         }
 
 
-
-        // create the fragment and data the first time
-        updateFragmentInfo();
-
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -100,51 +95,19 @@ public class MapActivity extends FragmentActivity implements
         mapFragment.getMapAsync(this);
     }
 
-    private void updateFragmentInfo() {
-        // find the retained fragment on activity restarts
-
-        //TODO TEST REMOVE
-//        FragmentManager fm = getFragmentManager();
-//        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-//        Location loc = new Location("");
-//        loc.setLatitude(40);
-//        loc.setLongitude(-70);
-//        // create the fragment and data the first time
-//        if (m_UserFragment == null) {
-//            // add the fragment
-//            m_UserFragment = new UserFragment();
-//            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-//        }
-//        try {
-//            Group groupTest = new Group();
-//            m_UserFragment.set(groupTest);
-//            m_UserFragment.getGroup().resetUsers();
-//            m_UserFragment.getGroup().addUsers(new User(loc));
-//            loc = new Location("");
-//            loc.setLatitude(60);
-//            loc.setLongitude(-80);
-//            m_UserFragment.getGroup().addUsers(new User(loc));
-//        }
-//        catch (NullPointerException e){
-//            e.printStackTrace();
-//        }
-//        m_currentUser = m_UserFragment.getUser();
-//        m_Group = m_UserFragment.getGroup();
-    }
-
     @Override
     public void onStart() {
-        super.onStart();
         Log.d(TAG, "onStart fired ..............");
         m_GoogleApiClient.connect();
+        super.onStart();
     }
 
     @Override
     public void onStop() {
-        super.onStop();
         Log.d(TAG, "onStop fired ..............");
         m_GoogleApiClient.disconnect();
         Log.d(TAG, "isConnected ...............: " + m_GoogleApiClient.isConnected());
+        super.onStop();
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -190,7 +153,7 @@ public class MapActivity extends FragmentActivity implements
         m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
         if(m_currentUser!=null){
-            m_currentUser.updateLocation(m_CurrentLocation);
+            m_currentUser.setM_CurrentLocation(m_CurrentLocation);
         }
     }
 

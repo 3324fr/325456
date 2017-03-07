@@ -15,7 +15,7 @@ public class Place {
 
     }
 
-    public Location m_location;
+    public SuperLocation m_location;
 
     public int vote;
 

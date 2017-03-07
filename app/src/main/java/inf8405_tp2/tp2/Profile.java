@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.XmlRes;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -25,6 +26,8 @@ public class Profile {
     public String m_name;
     @Exclude
     public Bitmap m_picture;
+    @Exclude
+    private byte[] bytesPicture;
 
 
     public Profile(String name, Bitmap picture) {
@@ -36,20 +39,36 @@ public class Profile {
         m_name = "";
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof User)) {
+            return false;
+        }
+        Profile that = (Profile) other;
+
+        // Custom equality check here.
+        return this.m_name.equals(that.m_name);
+    }
+
+
     @Exclude
     public void save(SQLiteDatabase db,StorageReference pictureRef ) {
+        this.save(db);
+        pictureRef.child(m_name).putBytes(bytesPicture);
+
+    }
+    @Exclude
+    public void save(SQLiteDatabase db ) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         m_picture.compress(Bitmap.CompressFormat.PNG, 0, stream);
 
-        byte[] data = stream.toByteArray();
+        bytesPicture = stream.toByteArray();
 
         // Create insert entries
         ContentValues values = new ContentValues();
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, m_name);
-        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, data);
+        values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_PICTURE, bytesPicture);
         db.insert(ContractSQLite.ProfileEntry.TABLE_NAME, null, values);
-
-        pictureRef.child(m_name).putBytes(data);
 
     }
     @Exclude
@@ -91,23 +110,22 @@ public class Profile {
     }
 
     @Exclude
-    public static final String[] getAllUsername(SQLiteDatabase db){
+    public static final List<String> getAllUsername(SQLiteDatabase db){
 
 
         Cursor  cursor = db.rawQuery("SELECT DISTINCT " +
-                ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " FROM "
-                + ContractSQLite.ProfileEntry.TABLE_NAME ,null);
-        List<String>  username = new ArrayList<>();
+                ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " FROM " +
+                ContractSQLite.ProfileEntry.TABLE_NAME ,null);
+        List<String>  list = new ArrayList<>();
         if (cursor .moveToFirst()) {
             while (cursor.isAfterLast() == false) {
                 String name = cursor.getString(cursor.getColumnIndex(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE));
-
-                username.add(name);
+                list.add(name);
                 cursor.moveToNext();
             }
         }
 
-        return username.toArray(new String[0]);
+        return list;
 
     }
 

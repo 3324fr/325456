@@ -1,19 +1,13 @@
 package inf8405_tp2.tp2;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,14 +16,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -44,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
     }
 
     @Override
@@ -109,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
 
     public  void OnclickCalendar(View view){
         Intent intent = new Intent(this, CalendarActivity.class);
-//        intent.putExtra(m_UserName, EXTRA_USER);
-//        intent.putExtra(m_GroupName, EXTRA_GROUP);
         startActivity(intent);
 
     }
@@ -120,11 +103,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickLogin(View view) {
-
-
-
-        //m_Database = FirebaseDatabase.getInstance().getReference();
-
+        accessGoogleMaps();
     }
 
 
@@ -133,40 +112,12 @@ public class MainActivity extends AppCompatActivity {
 
         String groupName = editText_group.getText().toString();
         UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
-        userS.setM_group(groupName);
+        userS.addUser2Group(groupName);
     }
 
     public void accessGoogleMaps() {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
-
-
-//        //TODO TEST REMOVE
-//        FragmentManager fm = getFragmentManager();
-//        m_UserFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
-//        Location loc = new Location("");
-//        loc.setLatitude(40);
-//        loc.setLongitude(-70);
-//        // create the fragment and data the first time
-//        if (m_UserFragment == null) {
-//            // add the fragment
-//            m_UserFragment = new UserFragment();
-//            fm.beginTransaction().add(m_UserFragment, TAG_RETAINED_USER).commit();
-//        }
-//        try {
-//            Group groupTest = new Group();
-//            m_UserFragment.set(groupTest);
-//            m_UserFragment.getGroup().resetUsers();
-//            m_UserFragment.getGroup().addUsers(new User(loc));
-//            loc = new Location("");
-//            loc.setLatitude(60);
-//            loc.setLongitude(-80);
-//            m_UserFragment.getGroup().addUsers(new User(loc));
-//        }
-//        catch (NullPointerException e){
-//            e.printStackTrace();
-//        }
-//        //
-//        startActivity(intent);
+        startActivity(intent);
     }
 
 
