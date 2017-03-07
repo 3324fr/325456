@@ -71,4 +71,15 @@ public class Group {
         return false;
     }
 
+    @Exclude
+    public Location getLocation(User user){
+        if(user == m_manager){
+            return m_manager.getLocation();
+        }
+        else if(m_users.contains(user)) {
+            return m_users.get(m_users.indexOf(user)).getLocation();
+        }
+        return null;
+    }
+
 }

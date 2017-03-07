@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -51,6 +52,7 @@ public class UserSingleton {
             m_UserPictureRef = m_FirebaseStorage.getReference("UserPic");
             m_GroupRef = m_FirebaseDatabase.getReference("Group's list");
             ourInstance = new UserSingleton(context.getApplicationContext());
+            Log.d("newUserSingle", "Re instantiation of ourInstance");
         }
         return ourInstance;
     }

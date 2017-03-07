@@ -1,8 +1,11 @@
 package inf8405_tp2.tp2;
 
 import android.Manifest;
+import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -24,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -42,6 +46,7 @@ public class MapActivity extends FragmentActivity implements
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final int REQUEST_LOCATION = 2;
     private static final float DEFAULT_ZOOM_STARTUP = 4.0f;
+    private UserSingleton ourInstance;
     private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
     private Button m_btnFusedLocation;
     private TextView m_tvLocation;
@@ -70,8 +75,6 @@ public class MapActivity extends FragmentActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
-
-
         createLocationRequest();
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -93,21 +96,25 @@ public class MapActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        ourInstance = UserSingleton.getInstance(getApplicationContext());
+        Intent intent = getIntent();
+
+        //m_currentUser = intent.getStringExtra("username");
     }
 
     @Override
     public void onStart() {
+        super.onStart();
         Log.d(TAG, "onStart fired ..............");
         m_GoogleApiClient.connect();
-        super.onStart();
     }
 
     @Override
     public void onStop() {
+        super.onStop();
         Log.d(TAG, "onStop fired ..............");
         m_GoogleApiClient.disconnect();
         Log.d(TAG, "isConnected ...............: " + m_GoogleApiClient.isConnected());
-        super.onStop();
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -153,7 +160,7 @@ public class MapActivity extends FragmentActivity implements
         m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
         if(m_currentUser!=null){
-            m_currentUser.setM_CurrentLocation(m_CurrentLocation);
+            m_currentUser.updateLocation(m_CurrentLocation);
         }
     }
 
@@ -179,24 +186,41 @@ public class MapActivity extends FragmentActivity implements
                     m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+                ourInstance.setLocation(localLoc);
                 showOtherUser();
+                showEventInfo();
+                // TODO TEST REMOVE
+                ourInstance.getLocation(ourInstance.getM_user());
             }
         } else {
             Log.d(TAG, "location is null ...............");
         }
     }
 
+    private void showEventInfo() {
+        //TODO SHOW EACH EVENT WITH A DIFFERENT MARKER
+    }
+
     private void showOtherUser() {
         try{
-            ArrayList<User> arrayUser = new ArrayList<>(m_Group.getUsers());
-            for(User user : arrayUser){
-                Location loc = user.getM_CurrentLocation();
-                LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
-                m_Map.addMarker(new MarkerOptions().position(latLng).title("Marker in local"));
-            }
+            getOtherUserInfo();
+
         }
         catch (NullPointerException e){
             e.printStackTrace();
+        }
+    }
+
+    private void getOtherUserInfo() {
+        //TODO GET DB
+        //m_Group.getUsers()
+        //UserSingleton.getInstance(getApplicationContext()).getAllUsername()
+        //TODO TEST
+        ArrayList<User> arrayUser = new ArrayList<>();
+        for(User user : arrayUser){
+            Location loc = user.getM_CurrentLocation();
+            LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
+            m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
         }
     }
 
@@ -240,9 +264,11 @@ public class MapActivity extends FragmentActivity implements
         if (requestCode == REQUEST_LOCATION) {
             if(grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // We can now safely use the API we requested access to
-                Location myLocation =
-                        LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+                if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+
+                    // We can now safely use the API we requested access to
+                    Location myLocation = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+                }
             } else {
                 // Permission was denied or request was cancelled
             }
@@ -259,5 +285,20 @@ public class MapActivity extends FragmentActivity implements
             m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
             m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
         }
+
+        m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
+            @Override
+            public void onMapLongClick (LatLng latLng) {
+
+                MarkerOptions marker = new MarkerOptions().position(
+                        new LatLng(latLng.latitude, latLng.longitude)).title("New Marker");
+
+                m_Map.addMarker(marker);
+
+                System.out.println(latLng.latitude+"---"+ latLng.longitude);
+
+            }
+        });
     }
 }

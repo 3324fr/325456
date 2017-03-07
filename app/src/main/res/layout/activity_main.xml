@@ -68,5 +68,14 @@
         android:layout_alignEnd="@+id/et_groupname"
         android:layout_marginEnd="18dp" />
 
+    <Button
+        android:text="GoogleMapTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btn_group"
+        android:onClick="OnClickGMap"
+        android:layout_toEndOf="@+id/et_groupname"
+        android:id="@+id/btn_gmap" />
+
 
 </RelativeLayout>
