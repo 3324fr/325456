@@ -4,7 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.location.LocationManager;
+import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,6 +48,7 @@ public class UserSingleton {
             m_UserPictureRef = m_FirebaseStorage.getReference("UserPic");
             m_GroupRef = m_FirebaseDatabase.getReference("Group's list");
             ourInstance = new UserSingleton(context.getApplicationContext());
+            Log.d("newUserSingle", "Re instantiation of ourInstance");
         }
         return ourInstance;
     }
@@ -134,9 +138,26 @@ public class UserSingleton {
         });
 
     }
+    public void setLocation(LatLng loc) {
+        Location temp = new Location(LocationManager.GPS_PROVIDER);
+        temp.setLatitude(loc.latitude);
+        temp.setLongitude(loc.longitude);
+        setLocation(temp);
+    }
     public void setLocation(Location loc) {
-        if(m_group.updateLoc(m_user,loc)){
-        m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
+        try{
+            if(m_group.updateLoc(m_user,loc)){
+                m_GroupRef.child(UserSingleton.m_group.m_name).
+                        setValue(UserSingleton.m_group);
+            }
         }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public Location getLocation(User user){
+        return m_group.getLocation(user);
     }
 }

@@ -18,8 +18,9 @@ import java.util.ArrayList;
 public class User {
 
     public Profile m_profile;
-    public double m_longitude;
-    public double m_latitude;
+    private double m_longitude;
+    private double m_latitude;
+    private Location m_location;
 
 
     public User(){
@@ -41,8 +42,14 @@ public class User {
     protected void updateLocation(Location loc){
         this.m_longitude = loc.getLongitude();
         this.m_latitude = loc.getLatitude();
+        this.m_location = loc;
+        Log.d("NewLoc", loc.getLatitude() + "\t" + loc.getLongitude());
+    }
 
-        Log.d("NewLoc", loc.getLatitude() + "");
+    @Exclude
+    public Location getLocation(){
+        Log.d("getLocation", m_location.getLatitude() + "\t"+m_location.getLongitude());
+        return m_location;
     }
 
     @Override

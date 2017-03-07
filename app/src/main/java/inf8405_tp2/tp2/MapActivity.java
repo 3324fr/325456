@@ -2,6 +2,7 @@ package inf8405_tp2.tp2;
 
 import android.Manifest;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -45,6 +46,7 @@ public class MapActivity extends FragmentActivity implements
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final int REQUEST_LOCATION = 2;
     private static final float DEFAULT_ZOOM_STARTUP = 4.0f;
+    private UserSingleton ourInstance;
     private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
     private Button m_btnFusedLocation;
     private TextView m_tvLocation;
@@ -94,6 +96,10 @@ public class MapActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        ourInstance = UserSingleton.getInstance(getApplicationContext());
+        Intent intent = getIntent();
+
+        //m_currentUser = intent.getStringExtra("username");
     }
 
     @Override
@@ -180,8 +186,11 @@ public class MapActivity extends FragmentActivity implements
                     m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+                ourInstance.setLocation(localLoc);
                 showOtherUser();
                 showEventInfo();
+                // TODO TEST REMOVE
+                ourInstance.getLocation(ourInstance.getM_user());
             }
         } else {
             Log.d(TAG, "location is null ...............");
@@ -205,6 +214,8 @@ public class MapActivity extends FragmentActivity implements
     private void getOtherUserInfo() {
         //TODO GET DB
         //m_Group.getUsers()
+        //UserSingleton.getInstance(getApplicationContext()).getAllUsername()
+        //TODO TEST
         ArrayList<User> arrayUser = new ArrayList<>();
         for(User user : arrayUser){
             Location loc = user.getM_CurrentLocation();

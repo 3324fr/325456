@@ -10,9 +10,6 @@ public class Manager extends User {
 
     public Manager() {}
 
-
-
-
     public Manager(User user) {
         super(user);
     }

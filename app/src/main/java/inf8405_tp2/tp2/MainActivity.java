@@ -39,12 +39,13 @@ public class MainActivity extends AppCompatActivity {
 
     private DialogFragment m_userFragment;
     private Profile m_profile;
+    private UserSingleton ourInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        ourInstance = UserSingleton.getInstance(getApplicationContext());
 
     }
 
@@ -134,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnClickGMap(View view) {
         Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        //intent.putExtra("username", m_profile.m_name);
         startActivity(intent);
     }
 
