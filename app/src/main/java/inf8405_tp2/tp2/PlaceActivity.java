@@ -53,7 +53,7 @@ public class PlaceActivity extends AppCompatActivity {
     }
 
 
-    public void image(View view){
+    public void onClickImage(View view){
         Intent intent = new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         intent.setType("image/*");
@@ -71,6 +71,9 @@ public class PlaceActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
+
+            //Bundle extras = data.getExtras();
+            //Bitmap imageBitmap = (Bitmap) extras.get("data");
 
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");

@@ -170,13 +170,13 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     public void setUserLocation(final Location loc) {
         if( this.m_group != null){
 
-                String groupName = this.m_group.m_name;
-                if (!groupName.isEmpty()) {
-                    if (this.m_group.updateLoc(ourInstance.getUser(), loc)) {
-                        ourInstance.getGroupref().child(groupName).setValue(this.m_group);
-                    }
+            String groupName = this.m_group.m_name;
+            if (!groupName.isEmpty()) {
+                if (this.m_group.updateLoc(ourInstance.getUser(), loc)) {
+                    ourInstance.getGroupref().child(groupName).setValue(this.m_group);
                 }
             }
+        }
     }
 
     public static void quitGroup(String groupeName) {
