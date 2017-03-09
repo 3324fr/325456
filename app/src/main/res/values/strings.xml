@@ -20,4 +20,7 @@
     <string name="pref_summary_delete_limit">z</string>
     <string name="pref_title_sms_delete">asfasf</string>
     <string name="hello">"Hello "</string>
+    <string name="nouveau_lieu">Nouveau Lieu</string>
+    <string name="nom_du_lieu">Nom du lieu</string>
+    <string name="photo_lieu">Photo</string>
 </resources>

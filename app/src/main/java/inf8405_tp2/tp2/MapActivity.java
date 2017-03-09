@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -34,6 +37,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MapActivity extends FragmentActivity implements
         LocationListener,
@@ -184,6 +188,7 @@ public class MapActivity extends FragmentActivity implements
                 if(onStartUp){
                     float zoomLevel = DEFAULT_ZOOM_STARTUP;
                     m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
+                    onStartUp = false;
                 }
                 m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
                 ourInstance.setUserLocation(m_CurrentLocation);
@@ -202,7 +207,12 @@ public class MapActivity extends FragmentActivity implements
 
     private void showOtherUser() {
         try{
-            getOtherUserInfo();
+            List<User> arrayUser = new ArrayList<>(getOtherUserInfo());
+            for(User user : arrayUser){
+                Location loc = user.getCurrentLocation();
+                LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
+                m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
+            }
 
         }
         catch (NullPointerException e){
@@ -210,17 +220,13 @@ public class MapActivity extends FragmentActivity implements
         }
     }
 
-    private void getOtherUserInfo() {
+    private List<User> getOtherUserInfo() {
+        List<User> arrayUser = new ArrayList<>();
         //TODO GET DB
         //m_Group.getUsers()
         //UserSingleton.getInstance(getApplicationContext()).getAllUsername()
         //TODO TEST
-        ArrayList<User> arrayUser = new ArrayList<>();
-        for(User user : arrayUser){
-            Location loc = user.getCurrentLocation();
-            LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
-            m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
-        }
+        return arrayUser;
     }
 
     @Override
@@ -290,14 +296,57 @@ public class MapActivity extends FragmentActivity implements
             @Override
             public void onMapLongClick (LatLng latLng) {
 
+                Button btn = (Button)findViewById(R.id.btnInflateNewMenu);
+
+                //Creating the instance of PopupMenu
+                PopupMenu popup = new PopupMenu(MapActivity.this, btn);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                });
+
+                popup.show();//showing popup menu
+
                 MarkerOptions marker = new MarkerOptions().position(
                         new LatLng(latLng.latitude, latLng.longitude)).title("New Marker");
 
                 m_Map.addMarker(marker);
 
+
+
                 System.out.println(latLng.latitude+"---"+ latLng.longitude);
+
+
 
             }
         });
+
+
     }
+
+    public void OnMenuClick(View view){
+
+
+        //Creating the instance of PopupMenu
+        PopupMenu popup = new PopupMenu(MapActivity.this, view);
+        //Inflating the Popup using xml file
+        popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+
+        //registering popup with OnMenuItemClickListener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+        popup.show();//showing popup menu
+    }
+
 }
