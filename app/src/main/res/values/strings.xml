@@ -23,4 +23,6 @@
     <string name="nouveau_lieu">Nouveau Lieu</string>
     <string name="nom_du_lieu">Nom du lieu</string>
     <string name="photo_lieu">Photo</string>
+    <string name="menu_cancel">Cancel</string>
+    <string name="menu_confirm">Confirm</string>
 </resources>

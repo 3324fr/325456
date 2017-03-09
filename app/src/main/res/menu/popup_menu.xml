@@ -8,14 +8,22 @@
         app:showAsAction="always">
         <menu>
             <item
-                android:id="@+id/action_photo"
+                android:id="@+id/action_nom"
                 android:title="@string/nom_du_lieu"
                 app:showAsAction="always|withText" />
             <item
-                android:id="@+id/action_video"
+                android:id="@+id/action_photo"
                 android:title="@string/photo_lieu"
+                app:showAsAction="always|withText" />
+            <item
+                android:id="@+id/action_confirm"
+                android:title="@string/menu_confirm"
                 app:showAsAction="always|withText" />
         </menu>
     </item>
-    ...(more menu items here)
+    <item
+        android:id="@+id/action_cancel"
+        android:title="@string/menu_cancel"
+        app:showAsAction="always">
+    </item>
 </menu>

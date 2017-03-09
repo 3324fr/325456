@@ -188,7 +188,7 @@ public class UserSingleton {
         }
     }
 
-    public static DatabaseReference getmGroupref() {
+    public static DatabaseReference getGroupref() {
         return m_GroupRef;
     }
 

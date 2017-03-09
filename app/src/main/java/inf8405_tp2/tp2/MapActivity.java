@@ -2,6 +2,7 @@ package inf8405_tp2.tp2;
 
 import android.Manifest;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,11 +11,14 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
+import android.text.Editable;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +34,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -63,6 +70,9 @@ public class MapActivity extends FragmentActivity implements
     private String m_lng;
     private User m_currentUser;
     private Group m_Group;
+    private String m_nameMeeting;
+    private BitmapDescriptor m_icon;
+    private static DatabaseReference m_GroupRef;
 
     protected void createLocationRequest() {
         m_LocationRequest = new LocationRequest();
@@ -101,6 +111,7 @@ public class MapActivity extends FragmentActivity implements
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
+        m_GroupRef = ourInstance.getGroupref();
         Intent intent = getIntent();
 
         //m_currentUser = intent.getStringExtra("username");
@@ -301,7 +312,7 @@ public class MapActivity extends FragmentActivity implements
         m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
 
             @Override
-            public void onMapLongClick (LatLng latLng) {
+            public void onMapLongClick (final LatLng latLng) {
 
                 Button btn = (Button)findViewById(R.id.btnInflateNewMenu);
 
@@ -313,47 +324,80 @@ public class MapActivity extends FragmentActivity implements
                 //registering popup with OnMenuItemClickListener
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
+
+                        switch(item.getItemId()){
+                            case R.id.action_new:
+                            case R.id.action_nom:
+                                popAlertDialog();
+                                break;
+                            case R.id.action_cancel:
+                                return true;
+                            case R.id.action_photo:
+                                m_icon = setMarkerIcon();
+                                break;
+                            case R.id.action_confirm:
+                                createNewGroup(m_nameMeeting);
+                                MarkerOptions marker;
+                                if(m_icon == null){
+                                    marker = new MarkerOptions().position(
+                                            new LatLng(latLng.latitude, latLng.longitude)).title(m_nameMeeting).icon(m_icon);
+                                } else {
+                                    marker = new MarkerOptions().position(
+                                            new LatLng(latLng.latitude, latLng.longitude)).title(m_nameMeeting);
+                                }
+
+                                m_Map.addMarker(marker);
+
+                                System.out.println(latLng.latitude+"---"+ latLng.longitude);
+                                break;
+                        }
                         Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
                         return true;
                     }
                 });
-
                 popup.show();//showing popup menu
 
-                MarkerOptions marker = new MarkerOptions().position(
-                        new LatLng(latLng.latitude, latLng.longitude)).title("New Marker");
-
-                m_Map.addMarker(marker);
-
-
-
-                System.out.println(latLng.latitude+"---"+ latLng.longitude);
-
-
 
             }
         });
-
-
     }
 
-    public void OnMenuClick(View view){
+    private BitmapDescriptor setMarkerIcon() {
+        //TODO
+        BitmapDescriptor icon = null;
+        return icon;
+    }
 
+    private void popAlertDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        //Creating the instance of PopupMenu
-        PopupMenu popup = new PopupMenu(MapActivity.this, view);
-        //Inflating the Popup using xml file
-        popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+        alert.setTitle("Create a name for the meeting");
+        alert.setMessage("Name");
 
-        //registering popup with OnMenuItemClickListener
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem item) {
-                Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
-                return true;
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+
+                // Do something with value!
+                m_nameMeeting = input.getText().toString();
             }
         });
 
-        popup.show();//showing popup menu
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
     }
 
+    private void createNewGroup(String nameMeeting) {
+        //TODO
+        //m_GroupRef.
+        Toast.makeText(MapActivity.this,"You Clicked : " + nameMeeting, Toast.LENGTH_SHORT).show();
+    }
 }
