@@ -1,303 +1,211 @@
 package inf8405_tp2.tp2;
 
-import android.Manifest;
-import android.app.FragmentManager;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.Build;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+public class MapActivity extends FragmentActivity implements  OnMapReadyCallback {
+    public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
 
-public class MapActivity extends FragmentActivity implements
-        LocationListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        OnMapReadyCallback {
-
+    private static GoogleMap m_Map;
+    private static GoogleApiClient m_GoogleApiClient;
+    private static UiSettings mapSettings;
+    private final static int MY_LOCATION_REQUEST_CODE = 1;
     private static final String TAG = "LocationActivity";
-    private static final long INTERVAL = 1000 * 10;
-    private static final long FASTEST_INTERVAL = 1000 * 5;
-    private static final int REQUEST_LOCATION = 2;
-    private static final float DEFAULT_ZOOM_STARTUP = 4.0f;
-    private UserSingleton ourInstance;
-    private final String TAG_RETAINED_USER = "inf8405_tp2.tp2.UserFragment";
-    private Button m_btnFusedLocation;
-    private TextView m_tvLocation;
-    private LocationRequest m_LocationRequest;
-    private GoogleApiClient m_GoogleApiClient;
-    private Location m_CurrentLocation;
-    private String m_LastUpdateTime;
-    private GoogleMap m_Map;
-    private String m_lat;
-    private String m_lng;
-    private User m_currentUser;
-    private Group m_Group;
+    private static final String TAG_ADD_PLACE = "inf8405_tp2.tp2.addPlaceFragment";
 
-    protected void createLocationRequest() {
-        m_LocationRequest = new LocationRequest();
-        m_LocationRequest.setInterval(INTERVAL);
-        m_LocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        m_LocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
+    private static Group m_group;
+    private static UserSingleton ourInstance;
+    private static SharedPreferences sharedPref;
+    private static LocationManager locationManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate ...............................");
-        //show error dialog if GoolglePlayServices not available
-        if (!isGooglePlayServicesAvailable()) {
-            finish();
-        }
-        createLocationRequest();
-        m_GoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
         setContentView(R.layout.maps);
-        m_tvLocation = (TextView) findViewById(R.id.tvLocation);
-
-        m_btnFusedLocation = (Button) findViewById(R.id.btnShowLocation);
-        m_btnFusedLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                updateUI(true);
-            }
-        });
-
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
-        Intent intent = getIntent();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //m_currentUser = intent.getStringExtra("username");
+        // Acquire a reference to the system Location Manager
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+
     }
+
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart fired ..............");
-        m_GoogleApiClient.connect();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop fired ..............");
-        m_GoogleApiClient.disconnect();
-        Log.d(TAG, "isConnected ...............: " + m_GoogleApiClient.isConnected());
-    }
-
-    private boolean isGooglePlayServicesAvailable() {
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (ConnectionResult.SUCCESS == status) {
-            return true;
-        } else {
-            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
-            return false;
-        }
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected - isConnected ...............: " + m_GoogleApiClient.isConnected());
-        startLocationUpdates();
-    }
-
-    protected void startLocationUpdates() {
-
-        // Assume thisActivity is the current activity
-        int permissionCheck = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
-                m_GoogleApiClient, m_LocationRequest, this);
-        Log.d(TAG, "Location update started ..............: ");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG, "Connection failed: " + connectionResult.toString());
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "Firing onLocationChanged..............................................");
-        m_CurrentLocation = location;
-        m_LastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        updateUI();
-        if(m_currentUser!=null){
-            m_currentUser.setCurrentLocation(m_CurrentLocation);
-        }
-    }
-
-    private void updateUI(){
-        updateUI(false);
-    }
-
-    private void updateUI(boolean onStartUp) {
-        Log.d(TAG, "UI update initiated .............");
-        if (null != m_CurrentLocation) {
-            m_lat = String.valueOf(m_CurrentLocation.getLatitude());
-            m_lng = String.valueOf(m_CurrentLocation.getLongitude());
-            m_tvLocation.setText("At Time: " + m_LastUpdateTime + "\n" +
-                    "Latitude: " + m_lat + "\n" +
-                    "Longitude: " + m_lng + "\n" +
-                    "Accuracy: " + m_CurrentLocation.getAccuracy() + "\n" +
-                    "Provider: " + m_CurrentLocation.getProvider());
-            if(m_lat != null && m_lng != null){
-                LatLng localLoc = new LatLng(Double.parseDouble(m_lat), Double.parseDouble(m_lng));
-                m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
-                if(onStartUp){
-                    float zoomLevel = DEFAULT_ZOOM_STARTUP;
-                    m_Map.moveCamera( CameraUpdateFactory.newLatLngZoom(localLoc, zoomLevel) );
-                }
-                m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
-                ourInstance.setUserLocation(m_CurrentLocation);
-                showOtherUser();
-                showEventInfo();
-
-            }
-        } else {
-            Log.d(TAG, "location is null ...............");
-        }
-    }
-
-    private void showEventInfo() {
-        //TODO SHOW EACH EVENT WITH A DIFFERENT MARKER
-    }
-
-    private void showOtherUser() {
-        try{
-            getOtherUserInfo();
-
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-        }
-    }
-
-    private void getOtherUserInfo() {
-        //TODO GET DB
-        //m_Group.getUsers()
-        //UserSingleton.getInstance(getApplicationContext()).getAllUsername()
-        //TODO TEST
-        ArrayList<User> arrayUser = new ArrayList<>();
-        for(User user : arrayUser){
-            Location loc = user.getCurrentLocation();
-            LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
-            m_Map.addMarker(new MarkerOptions().position(latLng).title(user.m_profile.m_name));
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopLocationUpdates();
-    }
-
-    protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                m_GoogleApiClient, this);
-        Log.d(TAG, "Location update stopped .......................");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Assume thisActivity is the current activity
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Check Permissions Now
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION);
-        } else {
-            // permission has been granted, continue as usual
-            Location myLocation =
-                    LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
-        }
-        if (m_GoogleApiClient.isConnected()) {
-            startLocationUpdates();
-            Log.d(TAG, "Location update resumed .....................");
-        }
-    }
-
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions,
-                                           int[] grantResults) {
-        if (requestCode == REQUEST_LOCATION) {
-            if(grantResults.length == 1
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
-
-                    // We can now safely use the API we requested access to
-                    Location myLocation = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
-                }
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == MY_LOCATION_REQUEST_CODE) {
+            if (permissions.length == 1 &&
+                    permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             } else {
-                // Permission was denied or request was cancelled
+                // todo : Permission was denied. Display an error message.
             }
         }
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         m_Map = googleMap;
-        updateUI();
-        // Add a marker in Sydney and move the camera
-        if(m_lat != null && m_lng != null){
-            LatLng localLoc = new LatLng(Double.parseDouble(m_lat), Double.parseDouble(m_lng));
-            m_Map.addMarker(new MarkerOptions().position(localLoc).title("Marker in local"));
-            m_Map.moveCamera(CameraUpdateFactory.newLatLng(localLoc));
+
+        // Request permission.
+        ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                MY_LOCATION_REQUEST_CODE);
+        map();
+
+    }
+
+    public void map(){
+
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            m_Map.setMyLocationEnabled(true);
+            SetOnMapListener();
+
+
+
+            this.m_group = ourInstance.getGroup();
+
+            Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            setUserLocation(loc);
+
+
+            // Define a listener that responds to location updates
+            LocationListener locationListener = locationListener();
+            //  minimum time interval between location updates, in milliseconds
+            int minTime = Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key),"3"))*1000;
+            // Register the listener with the Location Manager to receive location updates
+
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, 0, locationListener);
+
+            ourInstance.getGroupref().child(this.m_group.m_name)
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            try {
+                                final Group group = dataSnapshot.getValue(Group.class);
+                                m_group = group;
+                            } catch (Exception e) {//todo
+
+                            }
+
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            // Getting Post failed, log a message
+                            System.out.println("The read read failed: " + databaseError.getCode());
+                        }
+                    });}
+        else {
+            // Show rationale and request permission.
         }
 
+    }
+
+    public LocationListener  locationListener(){
+        return new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                setUserLocation(location);
+
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
+    }
+
+
+    public void setUserLocation(final Location loc) {
+        if( this.m_group != null){
+
+                String groupName = this.m_group.m_name;
+                if (!groupName.isEmpty()) {
+                    if (this.m_group.updateLoc(ourInstance.getUser(), loc)) {
+                        ourInstance.getGroupref().child(groupName).setValue(this.m_group);
+                    }
+                }
+            }
+    }
+
+    public static void quitGroup(String groupeName) {
+        //// TODO: 2017-03-08
+        // Remove the listener you previously added
+        // locationManager.removeUpdates(locationListener);
+    }
+
+    private void SetOnMapListener(){
         m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
 
             @Override
-            public void onMapLongClick (LatLng latLng) {
+            public void onMapLongClick(LatLng latLng) {
+                if(m_group.m_places.size() < 3){
+                    Intent i = new Intent(MapActivity.this, PlaceActivity.class);
+                    i.putExtra(MESSAGE_LAT_LNG,latLng);
+                    startActivity(i);
 
-                MarkerOptions marker = new MarkerOptions().position(
-                        new LatLng(latLng.latitude, latLng.longitude)).title("New Marker");
-
-                m_Map.addMarker(marker);
-
-                System.out.println(latLng.latitude+"---"+ latLng.longitude);
+                }
 
             }
+
         });
     }
+
+
+
+
+
+
+
+
 }

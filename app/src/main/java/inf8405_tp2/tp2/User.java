@@ -23,13 +23,11 @@ public class User {
 
     public User(){
         this.m_profile = new Profile();
-        this.m_CurrentLocation = new SuperLocation();
     }
 
     public User(Profile profile){
         this();
         this.m_profile = profile;
-
     }
 
     protected User(User user){
@@ -37,11 +35,11 @@ public class User {
     }
     @Exclude
     public Location getCurrentLocation() {
-        return m_CurrentLocation;
+        return this.m_CurrentLocation;
     }
     @Exclude
     public void setCurrentLocation(Location loc){
-        this.m_CurrentLocation = (SuperLocation) loc;
+        this.m_CurrentLocation = new SuperLocation(loc);
 
         Log.d("NewLoc", loc.getLatitude() + "");
     }

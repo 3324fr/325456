@@ -20,13 +20,17 @@ public class Group {
     public Manager m_manager;
     public List<User> m_users;
     public List<Meeting> m_meetings;
+    public List<Place> m_places;
 
     public  Group(){
+
         this.m_users =  new ArrayList<>();
+        this.m_meetings = new ArrayList<>();
+        this.m_places = new ArrayList<>();
     }
 
     public  Group(Manager manager, String name){
-        super();
+        this();
         if(name.isEmpty()){
             name = "default";
         }
@@ -36,14 +40,11 @@ public class Group {
     }
 
     @Exclude
-    public Boolean addUsers(User user){
-        if(this.getUsers().contains(user)) {
-            Log.d("newUserSingle", "Re instzcscasasantiation of ourInstance");
+    public Boolean isMember(User user){
+        if(this.m_users.contains(user) || user.m_profile == this.m_manager.m_profile) {
             return false;
         }
         else{
-            this.m_users.add(user);
-            Log.d("newUserSingle", "Re instantiaxxxxxxxxxxxxxxxxxxxxxtion of ourInstance");
             return true;
         }
     }
@@ -58,11 +59,11 @@ public class Group {
     @Exclude
     public Boolean updateLoc(User user,Location loc){
         if(user == m_manager){
-            m_manager.setCurrentLocation(loc);
+            this.m_manager.setCurrentLocation(loc);
             return true;
         }
         else if(m_users.contains(user)) {
-            m_users.get(m_users.indexOf(user))
+            this.m_users.get(this.m_users.indexOf(user))
                     .setCurrentLocation(loc);
             return true;
         }
@@ -71,11 +72,11 @@ public class Group {
 
     @Exclude
     public Location getLocation(User user){
-        if(user == m_manager){
-            return m_manager.getCurrentLocation();
+        if(user == this.m_manager){
+            return this.m_manager.getCurrentLocation();
         }
         else if(m_users.contains(user)) {
-            return m_users.get(m_users.indexOf(user)).getCurrentLocation();
+            return this.m_users.get(this.m_users.indexOf(user)).getCurrentLocation();
         }
         return null;
     }

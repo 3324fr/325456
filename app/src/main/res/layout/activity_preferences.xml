@@ -10,6 +10,19 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="inf8405_tp2.tp2.PreferencesActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/my_toolbar"
+        android:layout_above="@+id/button2" />
+
     <Button
         android:text="Button"
         android:layout_width="wrap_content"
@@ -18,4 +31,5 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="44dp"
         android:id="@+id/button2" />
+
 </RelativeLayout>

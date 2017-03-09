@@ -1,23 +1,16 @@
 <resources>
     <string name="app_name">Tp2</string>
-    <string name="username">Username</string>
     <string name="enter_your_username">Enter your username</string>
-    <string name="confirm">Confirm Username</string>
     <string name="join_or_create_group">Join or Create Group</string>
-    <string name="cancel">Cancel</string>
-    <string name="edit_me">Edit Me</string>
     <string name="group_name">Group Name</string>
-    <string name="location">Location</string>
-    <string name="show_location">Show Location</string>
-    <string name="firebaseTest">Login Test</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="preferences">Preferences</string>
-    <string name="calendar">Calendar</string>
-    <string name="use_fingerprint_to_authenticate_key">use_fingerprint_to_authenticate_key</string>
-    <string name="use_fingerprint_to_authenticate_title">use_fingerprint_to_authenticate_title</string>
-    <string name="pref_summary_delete_limit">z</string>
-    <string name="pref_title_sms_delete">asfasf</string>
     <string name="hello">"Hello "</string>
+    <string name="defaul_group_name">Default Group Name</string>
+    <string name="settings">Settings</string>
+    <string name="agenda">agenda</string>
+    <string name="group_name_preference_key">group_name</string>
+    <string name="wqefreqf">dsfsdf</string>
+    <string name="location_updateInterval_key">location_updateInterval_key</string>
+    <string name="pich_picture_button">Pick picture button</string>
+    <string name="latitude_longitude">Latitude: Longitude:</string>
+    <string name="name">Name</string>
 </resources>

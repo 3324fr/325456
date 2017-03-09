@@ -11,7 +11,10 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
 public class SuperLocation extends Location {
-    protected SuperLocation(){
+    public SuperLocation(){
         super(LocationManager.GPS_PROVIDER);
+    }
+    public SuperLocation(Location loc){
+        super(loc);
     }
 }

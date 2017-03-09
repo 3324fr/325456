@@ -1,20 +1,27 @@
 package inf8405_tp2.tp2;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -46,7 +53,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
 
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                Intent intent = new Intent(this, PreferencesActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.action_agenda:
+                // User chose the "agenda" item, show the app settings UI...
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     @Override
@@ -66,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         m_profile = userS.getUserProfile();
-        Toast.makeText(this, m_profile.m_name, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
         picture();
     }
     @Override
@@ -90,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(!username.isEmpty()) {
             UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
-            Toast.makeText(this, getString(R.string.hello)+ username, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.hello)+ " " + username, Toast.LENGTH_SHORT).show();
             Profile profile = userS.getUserProfile(username);
 
             if (profile == null) {
@@ -108,29 +145,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public  void OnclickCalendar(View view){
-        Intent intent = new Intent(this, CalendarActivity.class);
-//        intent.putExtra(m_UserName, EXTRA_USER);
-//        intent.putExtra(m_GroupName, EXTRA_GROUP);
-        startActivity(intent);
-
-    }
-    public  void OnclickPreferences(View view){
-        Intent intent = new Intent(this, PreferencesActivity.class);
-        startActivity(intent);
-    }
-
-    public void OnClickLogin(View view) {
-        //m_Database = FirebaseDatabase.getInstance().getReference();
-    }
-
 
     public void OnClickGroup(View view){
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
 
         String groupName = editText_group.getText().toString();
-        UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
-        userS.addUser2Group(groupName);
+        ourInstance.addUser2Group(groupName);
     }
 
     public void OnClickGMap(View view) {

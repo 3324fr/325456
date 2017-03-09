@@ -1,13 +1,69 @@
 package inf8405_tp2.tp2;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.google.android.gms.maps.model.LatLng;
 
 public class PlaceActivity extends AppCompatActivity {
+
+    final static int PICK_IMAGE = 7;
+    private LatLng m_latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_place);
+
+        this.m_latLng = getIntent().getParcelableExtra(MapActivity.MESSAGE_LAT_LNG);
+
+        TextView textView =  (TextView) findViewById(R.id.add_place_location);
+        textView.setText( "Latitude: " + this.m_latLng.latitude + "\n" +
+                "Longitude: " + this.m_latLng.longitude + "\n" );
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar.setTitle(R.string.settings);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    public void image(View view){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+            ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
+            mImageView.setImageBitmap(  imageBitmap);
+
+        }
+    }//onActivityResult
 }

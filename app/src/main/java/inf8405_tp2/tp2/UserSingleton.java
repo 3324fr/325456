@@ -125,7 +125,7 @@ public class UserSingleton {
         return   UserSingleton.m_user.m_profile;
     }
 
-    public static User getM_user() {
+    public static User getUser() {
         return m_user;
     }
 
@@ -145,6 +145,7 @@ public class UserSingleton {
             groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+               // todo try catch
                     Group group = dataSnapshot.getValue(Group.class);
 
                     if (group == null) {
@@ -153,23 +154,13 @@ public class UserSingleton {
                         m_user = manager;
                         groupRef.setValue(group);
                     } else {
-                        if (group.addUsers(UserSingleton.m_user)) {
-                            groupRef.setValue(UserSingleton.m_group);
+                        if (!group.isMember(UserSingleton.m_user)) {
+                            group.m_users.add(m_user);
+                            groupRef.setValue(group);
                         }
                     }
+                    m_group = group;
                 }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    System.out.println("The read failed: " + databaseError.getCode());
-                }
-            });
-
-            groupRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    UserSingleton.m_group = dataSnapshot.getValue(Group.class);
-                }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     System.out.println("The read failed: " + databaseError.getCode());
@@ -177,14 +168,13 @@ public class UserSingleton {
             });
         }
     }
-    public void setUserLocation(final Location loc) {
-        if(m_group.updateLoc(m_user,loc)){
-            m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
-        }
-    }
 
-    public static DatabaseReference getmGroupref() {
-        return m_GroupRef;
+
+    public DatabaseReference getGroupref() {
+        return this.m_GroupRef;
+    }
+    public Group getGroup() {
+        return this.m_group;
     }
 
 }
