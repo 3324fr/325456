@@ -133,14 +133,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                 Log.d(TAG,"onDataChange Fired: ============");
                                 final Group group = dataSnapshot.getValue(Group.class);
                                 m_group = group;
-                                List<Place> places = new LinkedList<>(m_group.m_places);
                                 // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
-                                Place newestPlace = places.get(places.size()-1);
-                                if(newestPlace != null){
-                                    MarkerOptions marker = new MarkerOptions().position(new LatLng(newestPlace.m_loc.getLatitude(),newestPlace.m_loc.getLongitude()))
-                                            .title(newestPlace.m_name);
-                                    m_Map.addMarker(marker);
-                                }
+                                m_Map.clear();
+                                CreateMarker(m_group);
+
+
                             } catch (Exception e) {//todo
                                 e.printStackTrace();
                             }
@@ -156,6 +153,25 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             // Show rationale and request permission.
         }
 
+    }
+
+    public void CreateMarker(Group m_group){
+        List<Place> places = new LinkedList<>(m_group.m_places);
+        List<User> usagers = new LinkedList<>(m_group.m_users);
+        for(Place place : places){
+            if(place != null){
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                        .title(place.m_name);
+                m_Map.addMarker(marker);
+            }
+        }
+        for(User usager : usagers){
+            if(usager != null){
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(usager.m_CurrentLocation.getLatitude(),usager.m_CurrentLocation.getLongitude()))
+                        .title(usager.m_profile.m_name);
+                m_Map.addMarker(marker);
+            }
+        }
     }
 
     public LocationListener  locationListener(){
