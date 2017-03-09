@@ -160,7 +160,7 @@ public class UserSingleton {
                         }
                     }
                     if (group.isManager(UserSingleton.m_user)){
-                        UserSingleton.m_group.m_manager = new Manager(UserSingleton.m_user);
+                        group.m_manager = new Manager(UserSingleton.m_user);
                     }
                     groupRef.setValue(group);
                     m_group = group;
