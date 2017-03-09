@@ -178,8 +178,13 @@ public class UserSingleton {
         }
     }
     public void setUserLocation(final Location loc) {
-        if(m_group.updateLoc(m_user,loc)){
-            m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
+        try{
+            if(m_group.updateLoc(m_user,loc)){
+                m_GroupRef.child(UserSingleton.m_group.m_name).setValue(UserSingleton.m_group);
+            }
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
         }
     }
 

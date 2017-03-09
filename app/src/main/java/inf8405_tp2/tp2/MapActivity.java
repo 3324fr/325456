@@ -111,6 +111,22 @@ public class MapActivity extends FragmentActivity implements
         super.onStart();
         Log.d(TAG, "onStart fired ..............");
         m_GoogleApiClient.connect();
+        // Assume thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Check Permissions Now
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION);
+        } else {
+            // permission has been granted, continue as usual
+            Location myLocation =
+                    LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+        }
+        if (m_GoogleApiClient.isConnected()) {
+            startLocationUpdates();
+            Log.d(TAG, "Location update resumed .....................");
+        }
     }
 
     @Override
@@ -126,7 +142,6 @@ public class MapActivity extends FragmentActivity implements
         if (ConnectionResult.SUCCESS == status) {
             return true;
         } else {
-            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
             return false;
         }
     }
@@ -140,11 +155,14 @@ public class MapActivity extends FragmentActivity implements
     protected void startLocationUpdates() {
 
         // Assume thisActivity is the current activity
-        int permissionCheck = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
-                m_GoogleApiClient, m_LocationRequest, this);
-        Log.d(TAG, "Location update started ..............: ");
+        if(m_GoogleApiClient.isConnected()){
+            int permissionCheck = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+            if(permissionCheck == PackageManager.PERMISSION_GRANTED){
+                PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
+                        m_GoogleApiClient, m_LocationRequest, this);
+                Log.d(TAG, "Location update started ..............: ");
+            }
+        }
     }
 
     @Override
@@ -236,28 +254,17 @@ public class MapActivity extends FragmentActivity implements
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                m_GoogleApiClient, this);
-        Log.d(TAG, "Location update stopped .......................");
+        if(m_GoogleApiClient.isConnected()){
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    m_GoogleApiClient, this);
+            Log.d(TAG, "Location update stopped .......................");
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        // Assume thisActivity is the current activity
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Check Permissions Now
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION);
-        } else {
-            // permission has been granted, continue as usual
-            Location myLocation =
-                    LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
-        }
-        if (m_GoogleApiClient.isConnected()) {
+        if(m_GoogleApiClient.isConnected()){
             startLocationUpdates();
             Log.d(TAG, "Location update resumed .....................");
         }
