@@ -33,6 +33,7 @@ public class UserSingleton {
     private static FirebaseStorage m_FirebaseStorage;
     private static DatabaseReference m_GroupRef;
     private static StorageReference m_UserPictureRef;
+    private static StorageReference m_PlacePictureRef;
 
     private static Context m_Ctx;
     private static UserSingleton ourInstance;
@@ -50,6 +51,7 @@ public class UserSingleton {
             FirebaseAuth.getInstance().signInAnonymously();
             m_FirebaseDatabase = FirebaseDatabase.getInstance();
             m_UserPictureRef = m_FirebaseStorage.getReference("UserPic");
+            m_PlacePictureRef = m_FirebaseStorage.getReference("PlacePic");
             m_GroupRef = m_FirebaseDatabase.getReference("Group's list");
             ourInstance = new UserSingleton(context.getApplicationContext());
             Log.d("newUserSingle", "Re instantiation of ourInstance");
@@ -175,6 +177,38 @@ public class UserSingleton {
     }
     public Group getGroup() {
         return this.m_group;
+    }
+
+    public void createPlace(final Place place, String groupName) {
+
+        String placeName = place.m_name;
+
+
+        if(!groupName.isEmpty() && !placeName.isEmpty()) {
+            final DatabaseReference groupRef = m_GroupRef.child(groupName);
+            // Attach a listener to read the data at our group reference
+            groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // todo try catch
+                    Group group = dataSnapshot.getValue(Group.class);
+
+                    if (group != null) {
+                        group.m_places.add(place);
+                        groupRef.setValue(group);
+                        // Save image
+                        m_PlacePictureRef.child(place.m_name).putBytes(place.image);
+                        m_group = group;
+                    }
+
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    System.out.println("The read failed: " + databaseError.getCode());
+                }
+            });
+        }
+
     }
 
 }

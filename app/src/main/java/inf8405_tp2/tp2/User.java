@@ -1,5 +1,6 @@
 package inf8405_tp2.tp2;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.location.Location;
@@ -42,6 +43,11 @@ public class User {
         this.m_CurrentLocation = new SuperLocation(loc);
 
         Log.d("NewLoc", loc.getLatitude() + "");
+    }
+
+    @Exclude
+    public void accept(MapActivity activity){
+        activity.visit(this);
     }
 
     @Override

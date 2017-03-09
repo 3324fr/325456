@@ -13,4 +13,9 @@
     <string name="pich_picture_button">Pick picture button</string>
     <string name="latitude_longitude">Latitude: Longitude:</string>
     <string name="name">Name</string>
+    <string name="menu_cancel">Cancel</string>
+    <string name="menu_confirm">Confirm</string>
+    <string name="new_place">new place</string>
+    <string name="place_name">place name</string>
+    <string name="place_image">place image</string>
 </resources>

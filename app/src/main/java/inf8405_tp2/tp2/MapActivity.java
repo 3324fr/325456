@@ -44,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class MapActivity extends FragmentActivity implements  OnMapReadyCallback {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
+    public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
 
     private static GoogleMap m_Map;
     private static GoogleApiClient m_GoogleApiClient;
@@ -183,6 +184,14 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         // Remove the listener you previously added
         // locationManager.removeUpdates(locationListener);
     }
+    public void visit(User user) {
+        //// TODO: 2017-03-08
+
+    }
+    public void visit(Manager manager) {
+        //// TODO: 2017-03-08
+
+    }
 
     private void SetOnMapListener(){
         m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -192,6 +201,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 if(m_group.m_places.size() < 3){
                     Intent i = new Intent(MapActivity.this, PlaceActivity.class);
                     i.putExtra(MESSAGE_LAT_LNG,latLng);
+                    i.putExtra(MESSAGE_GROUP_NAME,m_group.m_name);
                     startActivity(i);
 
                 }

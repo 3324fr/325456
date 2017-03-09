@@ -4,16 +4,16 @@
 
     <item
         android:id="@+id/action_new"
-        android:title="@string/nouveau_lieu"
+        android:title="@string/new_place"
         app:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/action_nom"
-                android:title="@string/nom_du_lieu"
+                android:title="@string/place_name"
                 app:showAsAction="always|withText" />
             <item
                 android:id="@+id/action_photo"
-                android:title="@string/photo_lieu"
+                android:title="@string/place_image"
                 app:showAsAction="always|withText" />
             <item
                 android:id="@+id/action_confirm"
