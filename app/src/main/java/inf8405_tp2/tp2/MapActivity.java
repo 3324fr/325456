@@ -104,7 +104,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         m_Map = googleMap;
-
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
@@ -123,7 +122,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             setUserLocation(loc);
 
-
             // Define a listener that responds to location updates
             LocationListener locationListener = locationListener();
             //  minimum time interval between location updates, in milliseconds
@@ -132,7 +130,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, 0, locationListener);
             try {
-
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
                             @Override
@@ -144,12 +141,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                     // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                     m_Map.clear();
                                     CreateMarker(m_group);
-
-
                                 } catch (Exception e) {//todo
                                     e.printStackTrace();
                                 }
-
                             }
 
                             @Override
@@ -166,13 +160,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         else {
             // Show rationale and request permission.
         }
-
     }
 
     public void CreateMarker(Group m_group){
         List<Place> places = new LinkedList<>(m_group.m_places);
         List<Profile> profiles = new LinkedList<>(ourInstance.getAllUserProfiles());
-        List<User> users = new LinkedList<>(m_group.getUsers());
         for(Place place : places){
             if(place != null){
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
@@ -206,12 +198,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
                 setUserLocation(location);
-
             }
 
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
 
             public void onProviderEnabled(String provider) {}
 
@@ -257,7 +246,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     i.putExtra(MESSAGE_GROUP_NAME,m_group.m_name);
                     startActivity(i);
                 }
-
             }
 
         });
