@@ -49,6 +49,17 @@ public class Group {
         }
     }
 
+
+    @Exclude
+    public Boolean isManager(User user){
+        if(user == this.m_manager) {
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
     @Exclude
     public List<User> getUsers(){
         List<User> tmp = this.m_users;

@@ -35,6 +35,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -80,6 +81,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
     }
 
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
+        ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -168,6 +174,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         for(User usager : usagers){
             if(usager != null){
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(usager.m_CurrentLocation.getLatitude(),usager.m_CurrentLocation.getLongitude()))
+                        .icon(BitmapDescriptorFactory.fromBitmap(usager.m_profile.m_picture))
                         .title(usager.m_profile.m_name);
                 m_Map.addMarker(marker);
             }

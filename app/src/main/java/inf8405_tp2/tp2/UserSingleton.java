@@ -161,6 +161,9 @@ public class UserSingleton {
                             groupRef.setValue(group);
                         }
                     }
+                    if (group.isManager(UserSingleton.m_user)){
+                        UserSingleton.m_group.m_manager = new Manager(UserSingleton.m_user);
+                    }
                     m_group = group;
                 }
                 @Override
