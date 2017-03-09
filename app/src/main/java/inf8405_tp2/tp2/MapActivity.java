@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.fitness.data.Value;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -36,11 +37,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class MapActivity extends FragmentActivity implements  OnMapReadyCallback {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
@@ -57,6 +62,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private static UserSingleton ourInstance;
     private static SharedPreferences sharedPref;
     private static LocationManager locationManager;
+    private ValueEventListener valEventList;
 
 
     @Override
@@ -72,8 +78,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-
     }
 
 
@@ -98,7 +102,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
         map();
-
     }
 
     public void map(){
@@ -107,8 +110,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
             SetOnMapListener();
-
-
 
             this.m_group = ourInstance.getGroup();
 
@@ -124,22 +125,31 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, 0, locationListener);
 
-            ourInstance.getGroupref().child(this.m_group.m_name)
+            valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                     .addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             try {
+                                Log.d(TAG,"onDataChange Fired: ============");
                                 final Group group = dataSnapshot.getValue(Group.class);
                                 m_group = group;
+                                List<Place> places = new LinkedList<>(m_group.m_places);
+                                // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
+                                Place newestPlace = places.get(places.size()-1);
+                                if(newestPlace != null){
+                                    MarkerOptions marker = new MarkerOptions().position(new LatLng(newestPlace.m_loc.getLatitude(),newestPlace.m_loc.getLongitude()))
+                                            .title(newestPlace.m_name);
+                                    m_Map.addMarker(marker);
+                                }
                             } catch (Exception e) {//todo
-
+                                e.printStackTrace();
                             }
 
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
                             // Getting Post failed, log a message
-                            System.out.println("The read read failed: " + databaseError.getCode());
+                            System.out.println("The read read failed: " + databaseError.getCode() +"============");
                         }
                     });}
         else {
@@ -203,19 +213,10 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     i.putExtra(MESSAGE_LAT_LNG,latLng);
                     i.putExtra(MESSAGE_GROUP_NAME,m_group.m_name);
                     startActivity(i);
-
                 }
 
             }
 
         });
     }
-
-
-
-
-
-
-
-
 }

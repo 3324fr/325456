@@ -2,6 +2,7 @@ package inf8405_tp2.tp2;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.provider.MediaStore;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -72,25 +74,34 @@ public class PlaceActivity extends AppCompatActivity {
 
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
 
-            //Bundle extras = data.getExtras();
-            //Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Place place= new Place();
 
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            if(extras!= null){
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
 
-            ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
-            mImageView.setImageBitmap(  imageBitmap);
+                ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
+                mImageView.setImageBitmap(  imageBitmap);
 
-            // todo test save place
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-            Place place= new Place();
-            place.m_name = "DAvid Gourde";
-            place.image = stream.toByteArray();
+                // todo test save place
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+                place.image = stream.toByteArray();
+            }
+            place.m_name = ((EditText)findViewById(R.id.editText_place_name)).getText().toString();
+
             place.m_vote = 10;
-            place.m_latlng = m_latLng;
+            Location loc = new Location(place.m_name);
+            loc.setLatitude(m_latLng.latitude);
+            loc.setLongitude(m_latLng.longitude);
+            place.m_loc = new SuperLocation(loc);
             UserSingleton.getInstance(getApplicationContext()).createPlace(place, m_groupName);
 
         }
     }//onActivityResult
+
+    public void onClickConfirm(View view){
+        Intent i = new Intent(PlaceActivity.this, MapActivity.class);
+        startActivity(i);
+    }
 }

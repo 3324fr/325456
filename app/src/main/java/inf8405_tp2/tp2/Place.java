@@ -19,7 +19,7 @@ public class Place {
     }
 
     public String m_name;
-    public LatLng m_latlng;
+    public SuperLocation m_loc;
     public int m_vote;
 
     @Exclude

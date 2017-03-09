@@ -197,7 +197,9 @@ public class UserSingleton {
                         group.m_places.add(place);
                         groupRef.setValue(group);
                         // Save image
-                        m_PlacePictureRef.child(place.m_name).putBytes(place.image);
+                        if(place.image != null){
+                            m_PlacePictureRef.child(place.m_name).putBytes(place.image);
+                        }
                         m_group = group;
                     }
 
