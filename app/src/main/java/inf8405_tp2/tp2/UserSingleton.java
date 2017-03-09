@@ -19,6 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import inf8405_tp2.tp2.user.Post;
@@ -121,6 +122,14 @@ public class UserSingleton {
             UserSingleton.m_isLogin = true;
         }
         return profile;
+    }
+
+    public List<Profile> getAllUserProfiles(){
+        List<Profile> profiles = new ArrayList<>();
+        for(User user : getGroup().getUsers()){
+            profiles.add(getUserProfile(user.m_profile.m_name));
+        }
+        return profiles;
     }
 
     public Profile getUserProfile(){

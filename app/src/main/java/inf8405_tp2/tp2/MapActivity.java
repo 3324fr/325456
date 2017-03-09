@@ -45,6 +45,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -126,35 +127,42 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             // Define a listener that responds to location updates
             LocationListener locationListener = locationListener();
             //  minimum time interval between location updates, in milliseconds
-            int minTime = Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key),"3"))*1000;
+            int minTime = Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")) * 1000;
             // Register the listener with the Location Manager to receive location updates
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, 0, locationListener);
+            try {
 
-            valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            try {
-                                Log.d(TAG,"onDataChange Fired: ============");
-                                final Group group = dataSnapshot.getValue(Group.class);
-                                m_group = group;
-                                // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
-                                m_Map.clear();
-                                CreateMarker(m_group);
+                valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
+                        .addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                try {
+                                    Log.d(TAG, "onDataChange Fired: ============");
+                                    final Group group = dataSnapshot.getValue(Group.class);
+                                    m_group = group;
+                                    // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
+                                    m_Map.clear();
+                                    CreateMarker(m_group);
 
 
-                            } catch (Exception e) {//todo
-                                e.printStackTrace();
+                                } catch (Exception e) {//todo
+                                    e.printStackTrace();
+                                }
+
                             }
 
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            // Getting Post failed, log a message
-                            System.out.println("The read read failed: " + databaseError.getCode() +"============");
-                        }
-                    });}
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                // Getting Post failed, log a message
+                                System.out.println("The read read failed: " + databaseError.getCode() + "============");
+                            }
+                        });
+
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
         else {
             // Show rationale and request permission.
         }
@@ -163,7 +171,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
     public void CreateMarker(Group m_group){
         List<Place> places = new LinkedList<>(m_group.m_places);
-        List<User> usagers = new LinkedList<>(m_group.m_users);
+        List<Profile> profiles = new LinkedList<>(ourInstance.getAllUserProfiles());
+        List<User> users = new LinkedList<>(m_group.getUsers());
         for(Place place : places){
             if(place != null){
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
@@ -171,14 +180,25 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 m_Map.addMarker(marker);
             }
         }
-        for(User usager : usagers){
-            if(usager != null){
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(usager.m_CurrentLocation.getLatitude(),usager.m_CurrentLocation.getLongitude()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(usager.m_profile.m_picture))
-                        .title(usager.m_profile.m_name);
+        for(Profile profile : profiles){
+            if(profile != null){
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(GetLocationFromUser(profile.m_name).getLatitude(),GetLocationFromUser(profile.m_name).getLongitude()))
+                        .icon(BitmapDescriptorFactory.fromBitmap(profile.m_picture))
+                        .title(profile.m_name);
                 m_Map.addMarker(marker);
             }
         }
+    }
+
+    private SuperLocation GetLocationFromUser(String username){
+        List<User> users = new ArrayList<>(m_group.getUsers());
+        for(User user : users){
+            if(user.m_profile.m_name.equals(username)){
+                return user.getCurrentLocation();
+            }
+        }
+        Log.d(TAG, "User and profile not found ===========");
+        return null;
     }
 
     public LocationListener  locationListener(){

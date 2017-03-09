@@ -35,7 +35,7 @@ public class User {
         this(user.m_profile);
     }
     @Exclude
-    public Location getCurrentLocation() {
+    public SuperLocation getCurrentLocation() {
         return this.m_CurrentLocation;
     }
     @Exclude

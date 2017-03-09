@@ -29,7 +29,6 @@ public class Profile {
     @Exclude
     private byte[] bytesPicture;
 
-
     public Profile(String name, Bitmap picture) {
         m_name = name;
         m_picture = picture;
