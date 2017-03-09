@@ -42,10 +42,10 @@ public class Group {
     @Exclude
     public Boolean isMember(User user){
         if(this.m_users.contains(user) || user.m_profile == this.m_manager.m_profile) {
-            return false;
+            return true;
         }
         else{
-            return true;
+            return false;
         }
     }
 

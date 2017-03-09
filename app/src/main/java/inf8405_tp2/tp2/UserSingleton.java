@@ -154,16 +154,15 @@ public class UserSingleton {
                         Manager manager = new Manager(UserSingleton.m_user);
                         group = new Group(manager, groupName);
                         m_user = manager;
-                        groupRef.setValue(group);
                     } else {
                         if (!group.isMember(UserSingleton.m_user)) {
                             group.m_users.add(m_user);
-                            groupRef.setValue(group);
                         }
                     }
                     if (group.isManager(UserSingleton.m_user)){
                         UserSingleton.m_group.m_manager = new Manager(UserSingleton.m_user);
                     }
+                    groupRef.setValue(group);
                     m_group = group;
                 }
                 @Override
