@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         if(!username.isEmpty()) {
             UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
             Toast.makeText(this, getString(R.string.hello)+ " " + username, Toast.LENGTH_SHORT).show();
-            Profile profile = userS.getUserProfile(username);
+            Profile profile = userS.login(username);
 
             if (profile == null) {
                 m_profile = new Profile();

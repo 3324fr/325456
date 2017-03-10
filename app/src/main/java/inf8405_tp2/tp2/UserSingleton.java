@@ -124,7 +124,11 @@ public class UserSingleton {
         SQLiteDatabase db =  UserSingleton.m_sqLitehelper.getReadableDatabase();
         Profile profile =  Profile.get(db,username);
         db.close();
-        if(profile != null){
+        return profile;
+    }
+    public Profile login(String userName){
+        Profile profile = getUserProfile(userName);
+        if(profile != null && !m_isLogin){
             UserSingleton.m_user.m_profile = profile;
             UserSingleton.m_isLogin = true;
         }
@@ -185,7 +189,7 @@ public class UserSingleton {
                         if (!m_group.m_users.contains(UserSingleton.m_user))
                         {
                             m_group.m_users.add(m_user);
-                            groupRef.setValue(m_group);
+                            groupRef.child(Group.PROPERTY_USERS).child(String.valueOf(m_group.m_users.indexOf(m_user))).setValue(m_user);
                         }
                     }
                 }

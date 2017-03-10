@@ -148,8 +148,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         this.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                // Do stuff here!
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
