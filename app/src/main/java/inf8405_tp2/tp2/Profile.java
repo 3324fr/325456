@@ -40,13 +40,15 @@ public class Profile {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof User)) {
+        if (!(other instanceof Profile)) {
             return false;
         }
         Profile that = (Profile) other;
 
+        String toCompare = that.m_name;
+
         // Custom equality check here.
-        return this.m_name == that.m_name;
+        return this.m_name.equals(toCompare);
     }
 
 
@@ -126,6 +128,11 @@ public class Profile {
 
         return list;
 
+    }
+
+    @Override
+    public int hashCode() {
+        return this.m_name.hashCode();
     }
 
 }

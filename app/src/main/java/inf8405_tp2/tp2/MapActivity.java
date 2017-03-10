@@ -71,10 +71,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private static Group m_group;
     private static UserSingleton ourInstance;
     private static SharedPreferences sharedPref;
-    private static LocationManager locationManager;
     private ValueEventListener valEventList;
     private Button m_btnVote;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,17 +85,19 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         ourInstance = UserSingleton.getInstance(getApplicationContext());
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Acquire a reference to the system Location Manager
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        m_btnVote = (Button)findViewById(R.id.btn_vote);
+        m_btnVote.getBackground().setAlpha(32);
+        this.m_group = ourInstance.getGroup();
 
-        //m_btnVote = (Button)findViewById(R.id.btn_vote);
-        //m_btnVote.getBackground().setAlpha(32);
     }
 
     @Override
     protected  void onDestroy(){
         super.onDestroy();
-        ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
+        if(this.m_group != null ) {
+            ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
+            // Remove the listener you previously added
+        }
     }
 
     @Override
@@ -136,8 +136,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             m_Map.setMyLocationEnabled(true);
             SetOnMapListener();
 
-            this.m_group = ourInstance.getGroup();
+            // Acquire a reference to the system Location Manager
+            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
+
+            // todo check GPS provider
             Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             setUserLocation(loc);
 
@@ -147,7 +150,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             int minTime = Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")) * 1000;
             // Register the listener with the Location Manager to receive location updates
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, 0, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,100, 1,locationListener);
             try {
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
@@ -156,14 +159,17 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                 try {
                                     Log.d(TAG, "onDataChange Fired: ============");
                                     final Group group = dataSnapshot.getValue(Group.class);
-                                    m_group = group;
-                                    // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
-                                    m_Map.clear();
-                                    CreateMarker(m_group);
-                                    if(m_group.m_places.size() >= 3){
-                                        m_btnVote.getBackground().setAlpha(255);
+                                    if(group != null){
+                                        m_group = group;
+                                        // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
+                                        m_Map.clear();
+                                        CreateMarker(m_group);
+                                        if(m_group.m_places.size() >= 3){
+                                            m_btnVote.getBackground().setAlpha(255);
+                                        }
                                     }
-                                } catch (Exception e) {//todo
+                                }
+                                catch (Exception e) {//todo
                                     e.printStackTrace();
                                 }
                             }
@@ -185,10 +191,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }
 
     public void CreateMarker(Group m_group){
-        List<Place> places = new LinkedList<>(m_group.m_places);
-        List<Profile> profiles = new LinkedList<>(ourInstance.getAllUserProfiles());
-        if(places.size() == 3){
-            for(Place place : places){
+        if(m_group.m_places.size() == 3){
+            for(Place place : m_group.m_places){
                 if(place != null){
                     MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
                             .title(place.m_name).snippet("Rating : " + place.m_vote);
@@ -196,11 +200,20 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 }
             }
         }
-        for(Profile profile : profiles){
-            if(profile != null){
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(GetLocationFromUser(profile.m_name).getLatitude(),GetLocationFromUser(profile.m_name).getLongitude()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(profile.m_picture))
-                        .title(profile.m_name);
+        for(User u : m_group.getUsers()){
+            Location loc = u.getCurrentLocation();
+            Profile p = u.m_profile;
+
+            if(p != null && loc != null){
+                // get the local profile whose contain a picture
+                Profile localProfile = ourInstance.getUserProfile(p.m_name);
+                if(localProfile != null)
+                { // get the local user profile which have a picture
+                    p = localProfile;
+                }
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(loc.getLatitude(),loc.getLongitude()))
+                        .icon(BitmapDescriptorFactory.fromBitmap(p.m_picture))
+                        .title(p.m_name);
                 m_Map.addMarker(marker);
             }
         }
@@ -245,11 +258,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         }
     }
 
-    public static void quitGroup(String groupeName) {
-        //// TODO: 2017-03-08
-        // Remove the listener you previously added
-        // locationManager.removeUpdates(locationListener);
-    }
     public void visit(User user) {
         //// TODO: 2017-03-08
 

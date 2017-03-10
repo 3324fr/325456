@@ -55,6 +55,7 @@ public class UserSingleton {
             m_PlacePictureRef = m_FirebaseStorage.getReference("PlacePic");
             m_GroupRef = m_FirebaseDatabase.getReference("Group's list");
             ourInstance = new UserSingleton(context.getApplicationContext());
+            m_group = new Group();
             Log.d("newUserSingle", "Re instantiation of ourInstance");
         }
         return ourInstance;
@@ -157,22 +158,30 @@ public class UserSingleton {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                // todo try catch
-                    Group group = dataSnapshot.getValue(Group.class);
+
+                    Group group = null;
+                    try{group = dataSnapshot.getValue(Group.class);}
+                    catch (Exception e) {//todo
+                        e.printStackTrace();
+                    }
 
                     if (group == null) {
                         Manager manager = new Manager(UserSingleton.m_user);
-                        group = new Group(manager, groupName);
+                        m_group = new Group(manager, groupName);
                         m_user = manager;
+                        groupRef.setValue(m_group);
                     } else {
-                        if (!group.isMember(UserSingleton.m_user)) {
-                            group.m_users.add(m_user);
+                        m_group  = group;
+                        if ( m_group.m_manager != null && m_group.m_manager.equals(UserSingleton.m_user)) {
+                            // promote user to manager
+                            UserSingleton.m_user =  m_group.m_manager;
+                        }
+                        else if (!m_group.m_users.contains(UserSingleton.m_user))
+                        {
+                            m_group.m_users.add(m_user);
+                            groupRef.setValue(m_group);
                         }
                     }
-                    if (group.isManager(UserSingleton.m_user)){
-                        group.m_manager = new Manager(UserSingleton.m_user);
-                    }
-                    groupRef.setValue(group);
-                    m_group = group;
                 }
                 @Override
                 public void onCancelled(DatabaseError databaseError) {

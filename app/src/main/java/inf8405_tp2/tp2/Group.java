@@ -16,7 +16,7 @@ import java.util.List;
 @IgnoreExtraProperties
 public class Group {
 
-    public String m_name;
+    public String m_name = "Default Group";
     public Manager m_manager;
     public List<User> m_users;
     public List<Meeting> m_meetings;
@@ -69,14 +69,14 @@ public class Group {
 
     @Exclude
     public Boolean updateLoc(User user,Location loc){
-        if(user == m_manager){
-            this.m_manager.setCurrentLocation(loc);
-            return true;
-        }
-        else if(m_users.contains(user)) {
-            this.m_users.get(this.m_users.indexOf(user))
-                    .setCurrentLocation(loc);
-            return true;
+        if(loc != null) {
+            if (user.equals(m_manager)) {
+                this.m_manager.setCurrentLocation(loc);
+                return true;
+            } else if (m_users.contains(user)) {
+                this.m_users.get(this.m_users.indexOf(user)).setCurrentLocation(loc);
+                return true;
+            }
         }
         return false;
     }
