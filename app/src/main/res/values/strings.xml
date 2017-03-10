@@ -28,4 +28,9 @@
     <string name="place2">Place2</string>
     <string name="start_vote">Start Vote</string>
     <string name="create_event">Create Event</string>
+    <string name="click_on_the_place_to_set_final_meeting">Click on the place to set final Meeting</string>
+    <string name="rating1">Rating1</string>
+    <string name="rating2">Rating2</string>
+    <string name="rating3">Rating3</string>
+    <string name="wait_event">Wait for the manager to choose a Event Meeting</string>
 </resources>
