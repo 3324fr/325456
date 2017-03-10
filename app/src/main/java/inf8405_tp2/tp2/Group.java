@@ -64,12 +64,7 @@ final public class Group {
 
     @Exclude
     public Boolean isManager(User user){
-        if(user == this.m_manager) {
-            return false;
-        }
-        else{
-            return true;
-        }
+        return user == this.m_manager ?  true : false;
     }
 
     @Exclude

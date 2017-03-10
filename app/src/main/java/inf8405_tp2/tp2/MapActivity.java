@@ -82,6 +82,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private Button m_btnVote;
     private LocationManager locationManager;
     private ScheduledExecutorService scheduler;
+    private LinearLayout m_layoutRoot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +94,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         mapFragment.getMapAsync(this);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
+        m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
 
         this.m_group = ourInstance.getGroup();
@@ -102,6 +103,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if(m_group.m_places.size() == 3){
             m_btnVote.getBackground().setAlpha(255);
+            UpdateButtonAfterVote(m_layoutRoot);
         } else {
             m_btnVote.getBackground().setAlpha(32);
         }
@@ -317,7 +319,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }
 
     public void OnClickVote(View view){
-
         if(!ourInstance.getUser().getVote()){
             View child = getLayoutInflater().inflate(R.layout.content_map, null);
             if(view.getId() == R.id.btn_vote_start){
@@ -334,19 +335,18 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
-                LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+
                 child = (LinearLayout)findViewById(R.id.map_content);
                 SetRating();
-                if(item.getChildAt(0) == child){
+                if(m_layoutRoot.getChildAt(0) == child){
                     //second attempt to remove inflated
                     //child.setVisibility(View.GONE);
-                    item.removeViewAt(0);
+                    m_layoutRoot.removeViewAt(0);
                 }
-                Button btn = (Button)findViewById(R.id.btn_vote_start);
-                item.removeView(btn);
+                UpdateButtonAfterVote(m_layoutRoot);
                 View frag = (View)findViewById(R.id.map);
                 frag.setVisibility(View.VISIBLE);
-                item.invalidate();
+                m_layoutRoot.invalidate();
                 Group group =  this.m_group;
                 User user = ourInstance.getUser();
                 String userNum = String.valueOf(group.m_users.indexOf(user));
@@ -360,14 +360,29 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         }
     }
 
+    private void UpdateButtonAfterVote(LinearLayout item) {
+        Button btn = (Button)findViewById(R.id.btn_vote_start);
+        if(m_group.isManager(ourInstance.getUser())){
+            btn.setText(R.string.create_event);
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //TODO CREATE EVENT
+                    Toast.makeText(getApplicationContext(), "Creating Event", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            item.removeView(btn);
+        }
+    }
+
     private void SetRating() {
         RatingBar rb;
-        rb = (RatingBar)findViewById(R.id.ratingBar1);
-        m_group.m_places.get(0).m_rating.add(Math.floor(rb.getRating()));
-        rb = (RatingBar)findViewById(R.id.ratingBar2);
-        m_group.m_places.get(1).m_rating.add(Math.floor(rb.getRating()));
-        rb = (RatingBar)findViewById(R.id.ratingBar3);
-        m_group.m_places.get(2).m_rating.add(Math.floor(rb.getRating()));
+        Integer[]rbs = {R.id.ratingBar1, R.id.ratingBar2, R.id.ratingBar3};
+        for(int i = 0; i < rbs.length; ++i){
+            rb = (RatingBar)findViewById(rbs[i]);
+            m_group.m_places.get(i).m_rating.add(Math.floor(rb.getRating()));
+        }
         updateAllRating();
         setPlaceRatings();
     }
