@@ -87,7 +87,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         ourInstance = UserSingleton.getInstance(getApplicationContext());
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        m_btnVote = (Button)findViewById(R.id.btn_vote);
+        m_btnVote = (Button)findViewById(R.id.btn_vote_start);
         m_btnVote.getBackground().setAlpha(32);
         this.m_group = ourInstance.getGroup();
 
@@ -201,7 +201,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     m_Map.addMarker(marker);
                 }
             }
-            updateButtonTextField();
         }
         for(User u : m_group.getUsers()){
             Location loc = u.getCurrentLocation();
@@ -305,43 +304,81 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         });*/
     }
 
+    /*
     public void onClickPlace(View view){
-        RatingBar rb = (RatingBar)findViewById(R.id.ratingBar);
+        RatingBar rb;
         switch (view.getId()){
             case (R.id.btn_place1):
-
+                rb = (RatingBar)findViewById(R.id.ratingBar1);
+                m_group.m_places.get(0).m_vote = (int)rb.getRating();
                 break;
             case (R.id.btn_place2):
+                rb = (RatingBar)findViewById(R.id.ratingBar2);
+                m_group.m_places.get(1).m_vote = (int)rb.getRating();
                 break;
             case (R.id.btn_place3):
+                rb = (RatingBar)findViewById(R.id.ratingBar3);
+                m_group.m_places.get(2).m_vote = (int)rb.getRating();
                 break;
+        }
+    }*/
 
+    public void OnClickVote(View view){
+        View child = getLayoutInflater().inflate(R.layout.content_map, null);
+        if(view.getId() == R.id.btn_vote_start){
+            if(m_group.m_places.size() >=3 ){
+                m_btnVote.setText(R.string.vote_en_cours);
+                View frag = (View)findViewById(R.id.map);
+                frag.setVisibility(View.INVISIBLE);
+                LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+                ArrayList<View> viewList = new ArrayList<View>();
+                item.addView(child, 0);
+                updateButtonTextField();
+            } else {
+                final PopupWindow popUpWindow = new PopupWindow(this);
+                popUpWindow.showAtLocation(((LinearLayout)findViewById(R.id.maps)), Gravity.CENTER, 0, 0);
+                RelativeLayout containerLayout = new RelativeLayout(this);
+                TextView msg = new TextView(this);
+                msg.setText(R.string.trois_lieux);
+
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
+                containerLayout.addView(msg, layoutParams);
+                popUpWindow.setContentView(containerLayout);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // close your dialog
+                        popUpWindow.dismiss();
+                    }
+                }, 3000);
+            }
+        }
+        if(view.getId() == R.id.btn_vote_confirm){
+            LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+            child = (LinearLayout)findViewById(R.id.map_content);
+            SetRating();
+            if(item.getChildAt(0) == child){
+                //second attempt to remove inflated
+                //child.setVisibility(View.GONE);
+                item.removeViewAt(0);
+            }
+            Button btn = (Button)findViewById(R.id.btn_vote_start);
+            item.removeView(btn);
+            View frag = (View)findViewById(R.id.map);
+            frag.setVisibility(View.VISIBLE);
+            item.invalidate();
         }
     }
 
-    public void OnClickVote(View view){
-        if(m_group.m_places.size() >=3 ){
-            m_btnVote.setText(R.string.vote_en_cours);
-        } else {
-            final PopupWindow popUpWindow = new PopupWindow(this);
-            popUpWindow.showAtLocation(((RelativeLayout)findViewById(R.id.map)), Gravity.CENTER, 0, 0);
-            RelativeLayout containerLayout = new RelativeLayout(this);
-            TextView msg = new TextView(this);
-            msg.setText(R.string.trois_lieux);
-
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                    RelativeLayout.LayoutParams.MATCH_PARENT);
-            containerLayout.addView(msg, layoutParams);
-            popUpWindow.setContentView(containerLayout);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // close your dialog
-                    popUpWindow.dismiss();
-                }
-            }, 3000);
-        }
-
+    private void SetRating() {
+        RatingBar rb;
+        rb = (RatingBar)findViewById(R.id.ratingBar1);
+        m_group.m_places.get(0).m_vote =  (int)Math.floor(rb.getRating());
+        rb = (RatingBar)findViewById(R.id.ratingBar1);
+        m_group.m_places.get(1).m_vote = (int)Math.floor(rb.getRating());
+        rb = (RatingBar)findViewById(R.id.ratingBar2);
+        m_group.m_places.get(2).m_vote = (int)Math.floor(rb.getRating());
     }
 }

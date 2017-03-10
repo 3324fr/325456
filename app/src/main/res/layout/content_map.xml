@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:id="@+id/map_content"
+    android:layout_height="match_parent">
+
+    <Button
+        android:text="@string/place1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_place1"
+        android:layout_weight="1"
+        android:onClick="onClickPlace"/>
+
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar1"
+        android:layout_gravity="center"
+        android:numStars="5"
+        android:layout_weight="3"/>
+    <Button
+        android:text="@string/place2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_place2"
+        android:layout_weight="1"
+        android:onClick="onClickPlace"/>
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar2"
+        android:layout_gravity="center"
+        android:numStars="5"
+        android:layout_weight="3"/>
+    <Button
+        android:text="@string/place3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_place3"
+        android:layout_weight="1"
+        android:onClick="onClickPlace"/>
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar3"
+        android:layout_gravity="center"
+        android:numStars="5"
+        android:layout_weight="3"/>
+
+    <Button
+        android:text="@string/confirm_vote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_vote_confirm"
+        android:onClick="OnClickVote"
+        android:layout_weight="3"/>
+
+</LinearLayout>
