@@ -23,9 +23,13 @@ public class Place {
 
     @Exclude
     final static String PROPERTY_RATING = "Rating";
+    @Exclude
+    final static String PROPERTY_RATINGS = "Ratings";
 
     public String m_name;
     public SuperLocation m_loc;
+
+    @PropertyName(PROPERTY_RATINGS)
     public List<Double> m_rating = new ArrayList<>();
 
     @PropertyName(PROPERTY_RATING)

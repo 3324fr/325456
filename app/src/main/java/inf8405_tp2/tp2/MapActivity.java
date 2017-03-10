@@ -167,6 +167,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                         // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                         m_Map.clear();
                                         CreateMarker(m_group);
+                                        User user = ourInstance.getUser();
+                                        user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
                                         if(m_group.m_places.size() >= 3){
                                             m_btnVote.getBackground().setAlpha(255);
                                         }
@@ -326,51 +328,61 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }*/
 
     public void OnClickVote(View view){
-        View child = getLayoutInflater().inflate(R.layout.content_map, null);
-        if(view.getId() == R.id.btn_vote_start){
-            if(m_group.m_places.size() >=3 ){
-                m_btnVote.setText(R.string.vote_en_cours);
-                View frag = (View)findViewById(R.id.map);
-                frag.setVisibility(View.INVISIBLE);
-                LinearLayout item = (LinearLayout)findViewById(R.id.maps);
-                ArrayList<View> viewList = new ArrayList<View>();
-                item.addView(child, 0);
-                updateButtonTextField();
-            } else {
-                final PopupWindow popUpWindow = new PopupWindow(this);
-                popUpWindow.showAtLocation(((LinearLayout)findViewById(R.id.maps)), Gravity.CENTER, 0, 0);
-                RelativeLayout containerLayout = new RelativeLayout(this);
-                TextView msg = new TextView(this);
-                msg.setText(R.string.trois_lieux);
 
-                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                        RelativeLayout.LayoutParams.MATCH_PARENT);
-                containerLayout.addView(msg, layoutParams);
-                popUpWindow.setContentView(containerLayout);
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        // close your dialog
-                        popUpWindow.dismiss();
-                    }
-                }, 3000);
+        if(!ourInstance.getUser().getVote()){
+            View child = getLayoutInflater().inflate(R.layout.content_map, null);
+            if(view.getId() == R.id.btn_vote_start){
+                if(m_group.m_places.size() >=3 ){
+                    m_btnVote.setText(R.string.vote_en_cours);
+                    View frag = (View)findViewById(R.id.map);
+                    frag.setVisibility(View.INVISIBLE);
+                    LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+                    ArrayList<View> viewList = new ArrayList<View>();
+                    item.addView(child, 0);
+                    updateButtonTextField();
+                } else {
+                    final PopupWindow popUpWindow = new PopupWindow(this);
+                    popUpWindow.showAtLocation(((LinearLayout)findViewById(R.id.maps)), Gravity.CENTER, 0, 0);
+                    RelativeLayout containerLayout = new RelativeLayout(this);
+                    TextView msg = new TextView(this);
+                    msg.setText(R.string.trois_lieux);
+
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.MATCH_PARENT);
+                    containerLayout.addView(msg, layoutParams);
+                    popUpWindow.setContentView(containerLayout);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // close your dialog
+                            popUpWindow.dismiss();
+                        }
+                    }, 3000);
+                }
             }
-        }
-        if(view.getId() == R.id.btn_vote_confirm){
-            LinearLayout item = (LinearLayout)findViewById(R.id.maps);
-            child = (LinearLayout)findViewById(R.id.map_content);
-            SetRating();
-            if(item.getChildAt(0) == child){
-                //second attempt to remove inflated
-                //child.setVisibility(View.GONE);
-                item.removeViewAt(0);
+            if(view.getId() == R.id.btn_vote_confirm){
+                LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+                child = (LinearLayout)findViewById(R.id.map_content);
+                SetRating();
+                if(item.getChildAt(0) == child){
+                    //second attempt to remove inflated
+                    //child.setVisibility(View.GONE);
+                    item.removeViewAt(0);
+                }
+                Button btn = (Button)findViewById(R.id.btn_vote_start);
+                item.removeView(btn);
+                View frag = (View)findViewById(R.id.map);
+                frag.setVisibility(View.VISIBLE);
+                item.invalidate();
+                Group group =  this.m_group;
+                User user = ourInstance.getUser();
+                String userNum = String.valueOf(group.m_users.indexOf(user));
+                DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+                        .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_VOTE);
+                groupRef.setValue(true);
+                ourInstance.getUser().setVote(true);
             }
-            Button btn = (Button)findViewById(R.id.btn_vote_start);
-            item.removeView(btn);
-            View frag = (View)findViewById(R.id.map);
-            frag.setVisibility(View.VISIBLE);
-            item.invalidate();
         }
     }
 
@@ -396,6 +408,12 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
         try{
             Group group =  m_group;
+            for(Place place : group.m_places) {
+                String placeNum = String.valueOf(group.m_places.indexOf(place));
+                DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+                        .child(Group.PROPERTY_PLACES).child(placeNum).child(Place.PROPERTY_RATINGS);
+                groupRef.setValue(place.m_rating);
+            }
             for(Place place : group.m_places) {
                 String placeNum = String.valueOf(group.m_places.indexOf(place));
                 DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)

@@ -21,8 +21,13 @@ public class User {
 
     @Exclude
     final static String PROPERTY_LOCATION = "Location";
+    @Exclude
+    final static String PROPERTY_VOTE = "Vote";
 
     public Profile m_profile;
+
+    @PropertyName(PROPERTY_VOTE)
+    public boolean m_vote;
 
     @PropertyName(PROPERTY_LOCATION)
     public SuperLocation m_CurrentLocation;
@@ -45,6 +50,16 @@ public class User {
     @Exclude
     public void setCurrentLocation(Location loc){
         this.m_CurrentLocation = new SuperLocation(loc);
+    }
+
+    @Exclude
+    public void setVote(boolean value){
+        this.m_vote = value;
+    }
+
+    @Exclude
+    public Boolean getVote(){
+        return this.m_vote;
     }
 
     @Exclude
