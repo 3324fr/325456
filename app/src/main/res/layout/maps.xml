@@ -27,7 +27,7 @@
         android:layout_marginEnd="0dp" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/ll_btn_place"
         android:layout_weight="3"
@@ -53,7 +53,7 @@
     </LinearLayout>
 
     <RatingBar
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/ratingBar"
         android:numStars="5"

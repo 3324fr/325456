@@ -31,6 +31,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,6 +55,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -199,6 +201,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     m_Map.addMarker(marker);
                 }
             }
+            updateButtonTextField();
         }
         for(User u : m_group.getUsers()){
             Location loc = u.getCurrentLocation();
@@ -217,6 +220,18 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 m_Map.addMarker(marker);
             }
         }
+    }
+
+    private void updateButtonTextField() {
+        Button btn1 = (Button)findViewById(R.id.btn_place1);
+        Button btn2 = (Button)findViewById(R.id.btn_place2);
+        Button btn3 = (Button)findViewById(R.id.btn_place3);
+        List<Button> listBtn = new ArrayList<>(Arrays.asList(btn1, btn2, btn3));
+        for(int i = 0; i < listBtn.size(); ++i){
+            listBtn.get(i).setText(m_group.m_places.get(i).m_name);
+        }
+        LinearLayout ll = (LinearLayout)findViewById(R.id.maps);
+        ll.invalidate();
     }
 
     private SuperLocation GetLocationFromUser(String username){
@@ -291,37 +306,22 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }
 
     public void onClickPlace(View view){
+        RatingBar rb = (RatingBar)findViewById(R.id.ratingBar);
+        switch (view.getId()){
+            case (R.id.btn_place1):
 
+                break;
+            case (R.id.btn_place2):
+                break;
+            case (R.id.btn_place3):
+                break;
+
+        }
     }
 
     public void OnClickVote(View view){
         if(m_group.m_places.size() >=3 ){
             m_btnVote.setText(R.string.vote_en_cours);
-
-            //Creating the instance of PopupMenu
-            PopupMenu popup = new PopupMenu(MapActivity.this, m_btnVote);
-            //Inflating the Popup using xml file
-            popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
-
-            //registering popup with OnMenuItemClickListener
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                public boolean onMenuItemClick(MenuItem item) {
-
-                    switch(item.getItemId()){
-                        case R.id.menuPlace1:
-                            break;
-                        case R.id.menuPlace2:
-                            break;
-                        case R.id.menuPlace3:
-                            break;
-                        case R.id.menuConfirm:
-                            break;
-                    }
-                    Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-            });
-            popup.show();//showing popup menu
         } else {
             final PopupWindow popUpWindow = new PopupWindow(this);
             popUpWindow.showAtLocation(((RelativeLayout)findViewById(R.id.map)), Gravity.CENTER, 0, 0);
