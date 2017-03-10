@@ -100,7 +100,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
     }
 
     @Override
@@ -307,34 +306,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 }
             }
 
-        });/*
-        m_Map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                //View popUp = getLayoutInflater().inflate(R.layout.map_popup, map, false);
-                return false;
-            }
-        });*/
+        });
     }
-
-    /*
-    public void onClickPlace(View view){
-        RatingBar rb;
-        switch (view.getId()){
-            case (R.id.btn_place1):
-                rb = (RatingBar)findViewById(R.id.ratingBar1);
-                m_group.m_places.get(0).m_vote = (int)rb.getRating();
-                break;
-            case (R.id.btn_place2):
-                rb = (RatingBar)findViewById(R.id.ratingBar2);
-                m_group.m_places.get(1).m_vote = (int)rb.getRating();
-                break;
-            case (R.id.btn_place3):
-                rb = (RatingBar)findViewById(R.id.ratingBar3);
-                m_group.m_places.get(2).m_vote = (int)rb.getRating();
-                break;
-        }
-    }*/
 
     public void OnClickVote(View view){
 
@@ -350,24 +323,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     item.addView(child, 0);
                     updateButtonTextField();
                 } else {
-                    final PopupWindow popUpWindow = new PopupWindow(this);
-                    popUpWindow.showAtLocation(((LinearLayout)findViewById(R.id.maps)), Gravity.CENTER, 0, 0);
-                    RelativeLayout containerLayout = new RelativeLayout(this);
-                    TextView msg = new TextView(this);
-                    msg.setText(R.string.trois_lieux);
-
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
-                    containerLayout.addView(msg, layoutParams);
-                    popUpWindow.setContentView(containerLayout);
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // close your dialog
-                            popUpWindow.dismiss();
-                        }
-                    }, 3000);
+                    Toast.makeText(this, "Three locations to be marked", Toast.LENGTH_SHORT).show();
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
@@ -392,6 +348,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 groupRef.setValue(true);
                 ourInstance.getUser().setVote(true);
             }
+        } else {
+            Toast.makeText(this, "You already voted!", Toast.LENGTH_SHORT).show();
         }
     }
 
