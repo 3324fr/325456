@@ -223,7 +223,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             for(Place place : m_group.m_places){
                 if(place != null){
                     MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                            .title(place.m_name).snippet("Rating : " + place.m_vote);
+                            .title(place.m_name).snippet("Rating : " + place.m_finalRating);
                     m_Map.addMarker(marker);
                 }
             }
@@ -386,10 +386,34 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private void SetRating() {
         RatingBar rb;
         rb = (RatingBar)findViewById(R.id.ratingBar1);
-        m_group.m_places.get(0).m_vote =  (int)Math.floor(rb.getRating());
+        m_group.m_places.get(0).m_rating.add(Math.floor(rb.getRating()));
         rb = (RatingBar)findViewById(R.id.ratingBar2);
-        m_group.m_places.get(1).m_vote = (int)Math.floor(rb.getRating());
+        m_group.m_places.get(1).m_rating.add(Math.floor(rb.getRating()));
         rb = (RatingBar)findViewById(R.id.ratingBar3);
-        m_group.m_places.get(2).m_vote = (int)Math.floor(rb.getRating());
+        m_group.m_places.get(2).m_rating.add(Math.floor(rb.getRating()));
+        updateAllRating();
+        setPlaceRatings();
+    }
+
+    public void updateAllRating(){
+        for(Place place : m_group.m_places){
+            place.calculateRating();
+        }
+    }
+
+    public void setPlaceRatings() {
+
+        try{
+            Group group =  m_group;
+            for(Place place : group.m_places) {
+                String placeNum = String.valueOf(group.m_places.indexOf(place));
+                DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+                        .child(Group.PROPERTY_PLACES).child(placeNum).child(Place.PROPERTY_RATING);
+                groupRef.setValue(place.m_finalRating);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
