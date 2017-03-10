@@ -1,6 +1,7 @@
 package inf8405_tp2.tp2;
 
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,18 +13,25 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +57,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MapActivity extends FragmentActivity implements  OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
 
@@ -65,6 +73,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private static SharedPreferences sharedPref;
     private static LocationManager locationManager;
     private ValueEventListener valEventList;
+    private Button m_btnVote;
 
 
     @Override
@@ -80,6 +89,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        //m_btnVote = (Button)findViewById(R.id.btn_vote);
+        //m_btnVote.getBackground().setAlpha(32);
     }
 
     @Override
@@ -104,10 +116,17 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         m_Map = googleMap;
+        m_Map.setOnInfoWindowClickListener(this);
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
         map();
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        Toast.makeText(this, "Info window clicked",
+                Toast.LENGTH_SHORT).show();
     }
 
     public void map(){
@@ -141,6 +160,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                     // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                     m_Map.clear();
                                     CreateMarker(m_group);
+                                    if(m_group.m_places.size() >= 3){
+                                        m_btnVote.getBackground().setAlpha(255);
+                                    }
                                 } catch (Exception e) {//todo
                                     e.printStackTrace();
                                 }
@@ -165,11 +187,13 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     public void CreateMarker(Group m_group){
         List<Place> places = new LinkedList<>(m_group.m_places);
         List<Profile> profiles = new LinkedList<>(ourInstance.getAllUserProfiles());
-        for(Place place : places){
-            if(place != null){
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                        .title(place.m_name);
-                m_Map.addMarker(marker);
+        if(places.size() == 3){
+            for(Place place : places){
+                if(place != null){
+                    MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                            .title(place.m_name).snippet("Rating : " + place.m_vote);
+                    m_Map.addMarker(marker);
+                }
             }
         }
         for(Profile profile : profiles){
@@ -248,6 +272,68 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 }
             }
 
-        });
+        });/*
+        m_Map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                //View popUp = getLayoutInflater().inflate(R.layout.map_popup, map, false);
+                return false;
+            }
+        });*/
+    }
+
+    public void onClickPlace(View view){
+
+    }
+
+    public void OnClickVote(View view){
+        if(m_group.m_places.size() >=3 ){
+            m_btnVote.setText(R.string.vote_en_cours);
+
+            //Creating the instance of PopupMenu
+            PopupMenu popup = new PopupMenu(MapActivity.this, m_btnVote);
+            //Inflating the Popup using xml file
+            popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+
+            //registering popup with OnMenuItemClickListener
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+
+                    switch(item.getItemId()){
+                        case R.id.menuPlace1:
+                            break;
+                        case R.id.menuPlace2:
+                            break;
+                        case R.id.menuPlace3:
+                            break;
+                        case R.id.menuConfirm:
+                            break;
+                    }
+                    Toast.makeText(MapActivity.this,"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+            popup.show();//showing popup menu
+        } else {
+            final PopupWindow popUpWindow = new PopupWindow(this);
+            popUpWindow.showAtLocation(((RelativeLayout)findViewById(R.id.map)), Gravity.CENTER, 0, 0);
+            RelativeLayout containerLayout = new RelativeLayout(this);
+            TextView msg = new TextView(this);
+            msg.setText(R.string.trois_lieux);
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.MATCH_PARENT);
+            containerLayout.addView(msg, layoutParams);
+            popUpWindow.setContentView(containerLayout);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // close your dialog
+                    popUpWindow.dismiss();
+                }
+            }, 3000);
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,6 +9,8 @@
     tools:context=".MapActivity"
     android:id="@+id/maps"
     android:background="#ffffa6c7"
+    android:weightSum="10"
+    android:orientation="vertical"
     tools:padding="@dimen/activity_horizontal_margin">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
@@ -17,12 +19,51 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="373dp"
         tools:context="inf8405_tp2.tp2..MapActivity"
         android:layout_marginBottom="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginLeft="0dp"
-        android:layout_alignParentEnd="true"
         android:layout_marginEnd="0dp" />
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ll_btn_place"
+        android:layout_weight="3"
+        android:orientation="horizontal">
+        <Button
+            android:text="@string/place1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_place1"
+            android:onClick="onClickPlace"/>
+        <Button
+            android:text="@string/place2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_place2"
+            android:onClick="onClickPlace"/>
+        <Button
+            android:text="@string/place3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_place3"
+            android:onClick="onClickPlace"/>
+    </LinearLayout>
+
+    <RatingBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar"
+        android:layout_weight="3"/>
+
+    <Button
+        android:text="@string/confirm_vote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_vote"
+        android:onClick="OnClickVote"
+        android:layout_weight="3"/>
+
+</LinearLayout>

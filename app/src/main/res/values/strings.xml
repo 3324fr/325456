@@ -18,4 +18,12 @@
     <string name="new_place">new place</string>
     <string name="place_name">place name</string>
     <string name="place_image">place image</string>
+    <string name="commencez_vote">Commencez Vote</string>
+    <string name="trois_lieux">Trois places doivent être indiqués sur la map</string>
+    <string name="vote_en_cours">Vote en cours</string>
+    <string name="placex">place_x</string>
+    <string name="confirm_vote">Confirm Vote</string>
+    <string name="place1">Place1</string>
+    <string name="place3">Place3</string>
+    <string name="place2">Place2</string>
 </resources>
