@@ -376,9 +376,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         RatingBar rb;
         rb = (RatingBar)findViewById(R.id.ratingBar1);
         m_group.m_places.get(0).m_vote =  (int)Math.floor(rb.getRating());
-        rb = (RatingBar)findViewById(R.id.ratingBar1);
-        m_group.m_places.get(1).m_vote = (int)Math.floor(rb.getRating());
         rb = (RatingBar)findViewById(R.id.ratingBar2);
+        m_group.m_places.get(1).m_vote = (int)Math.floor(rb.getRating());
+        rb = (RatingBar)findViewById(R.id.ratingBar3);
         m_group.m_places.get(2).m_vote = (int)Math.floor(rb.getRating());
     }
 }
