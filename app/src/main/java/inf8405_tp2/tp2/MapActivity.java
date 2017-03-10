@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class MapActivity extends FragmentActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
@@ -261,14 +262,15 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
 
     public void setUserLocation(final Location loc) {
-        if( this.m_group != null){
 
-            String groupName = this.m_group.m_name;
-            if (!groupName.isEmpty()) {
-                if (this.m_group.updateLoc(ourInstance.getUser(), loc)) {
-                    ourInstance.getGroupref().child(groupName).setValue(this.m_group);
-                }
-            }
+        Group group =  this.m_group;
+        User user = ourInstance.getUser();
+        if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.contains(user)) {
+
+                String userNum = String.valueOf(group.m_users.indexOf(user));
+             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+                    .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_LOCATION);
+            groupRef.setValue(loc);
         }
     }
 

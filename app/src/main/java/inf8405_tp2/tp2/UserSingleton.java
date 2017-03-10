@@ -77,6 +77,7 @@ public class UserSingleton {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    try{
                         final Group group = postSnapshot.getValue(Group.class);
                         for (User user : group.getUsers()) {
                             if(user != null && user.m_profile != null){
@@ -99,7 +100,10 @@ public class UserSingleton {
                                             });
                                 }
                             }
-                        }
+                        }}
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
                 }
             }
             @Override
@@ -178,7 +182,7 @@ public class UserSingleton {
                             // promote user to manager
                             UserSingleton.m_user =  m_group.m_manager;
                         }
-                        else if (!m_group.m_users.contains(UserSingleton.m_user))
+                        if (!m_group.m_users.contains(UserSingleton.m_user))
                         {
                             m_group.m_users.add(m_user);
                             groupRef.setValue(m_group);

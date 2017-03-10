@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.PropertyName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +15,15 @@ import java.util.List;
  */
 
 @IgnoreExtraProperties
-public class Group {
+final public class Group {
+
+    @Exclude
+    final static String PROPERTY_USERS = "usersList";
+
 
     public String m_name = "Default Group";
     public Manager m_manager;
+    @PropertyName(PROPERTY_USERS)
     public List<User> m_users;
     public List<Meeting> m_meetings;
     public List<Place> m_places;
@@ -27,8 +33,8 @@ public class Group {
         this.m_users =  new ArrayList<>();
         this.m_meetings = new ArrayList<>();
         this.m_places = new ArrayList<>();
+        this.m_manager = new Manager();
     }
-
     public  Group(Manager manager, String name){
         this();
         if(name.isEmpty()){
@@ -36,6 +42,10 @@ public class Group {
         }
         this.m_manager = manager;
         this.m_name = name;
+        this.m_meetings = new ArrayList<>();
+        this.m_places = new ArrayList<>();
+        this.m_users = new ArrayList<>();
+        this.m_users.add(manager);
 
     }
 
@@ -66,14 +76,10 @@ public class Group {
         tmp.add(m_manager);
         return tmp;
     }
-
     @Exclude
     public Boolean updateLoc(User user,Location loc){
         if(loc != null) {
-            if (user.equals(m_manager)) {
-                this.m_manager.setCurrentLocation(loc);
-                return true;
-            } else if (m_users.contains(user)) {
+             if (m_users.contains(user)) {
                 this.m_users.get(this.m_users.indexOf(user)).setCurrentLocation(loc);
                 return true;
             }
