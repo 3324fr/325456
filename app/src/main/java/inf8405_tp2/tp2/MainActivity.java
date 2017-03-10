@@ -53,37 +53,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                // User chose the "Settings" item, show the app settings UI...
-                Intent intent = new Intent(this, PreferencesActivity.class);
-                startActivity(intent);
-                return true;
-            case R.id.action_agenda:
-                // User chose the "agenda" item, show the app settings UI...
-                return true;
-
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
     }
 
     @Override
@@ -146,17 +115,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void OnClickGroup(View view){
-        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
-
-        String groupName = editText_group.getText().toString();
-        ourInstance.addUser2Group(groupName);
-    }
-
     public void OnClickGMap(View view) {
-        Intent intent = new Intent(MainActivity.this, MapActivity.class);
-        //intent.putExtra("username", m_profile.m_name);
-        startActivity(intent);
+        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
+        String groupName = editText_group.getText().toString();
+        if(!groupName.isEmpty()) {
+            ourInstance.addUser2Group(groupName);
+            Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(intent);
+        }
     }
 
 
@@ -174,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
             final AutoCompleteTextView textView = (AutoCompleteTextView)
                     v.findViewById(R.id.editText_username);
             textView.setAdapter(adapter);
-
 
             // Show soft keyboard automatically
             textView.requestFocus();

@@ -33,4 +33,5 @@
     <string name="rating2">Rating2</string>
     <string name="rating3">Rating3</string>
     <string name="wait_event">Wait for the manager to choose a Event Meeting</string>
+    <string name="start">Start</string>
 </resources>

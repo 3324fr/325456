@@ -21,10 +21,13 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +67,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MapActivity extends FragmentActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
+public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
 
@@ -93,6 +96,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
@@ -109,6 +114,34 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             }
         } else {
             m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
+        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                Intent intent = new Intent(this, PreferencesActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.action_agenda:
+                // User chose the "agenda" item, show the app settings UI...
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
         }
     }
 
