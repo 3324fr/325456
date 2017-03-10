@@ -311,7 +311,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         Group group =  this.m_group;
         User user = ourInstance.getUser();
         if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.contains(user)) {
-
             String userNum = String.valueOf(group.m_users.indexOf(user));
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_LOCATION);
@@ -330,7 +329,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
     private void SetOnMapListener(){
         m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-
             @Override
             public void onMapLongClick(LatLng latLng) {
                 if(doubleCheckManager()){
@@ -343,9 +341,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 } else {
                     Toast.makeText(getApplicationContext(), "You are not the manager.", Toast.LENGTH_LONG);
                 }
-
             }
-
         });
     }
 
@@ -394,9 +390,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         }
     }
 
+    // EVENT CHOOSER IMPORTANT
     public void OnClickPlace(View view){
         m_Map.clear();
         Place place = null;
+        String moreInfo = "";
         switch (view.getId()){
             case R.id.btn_meeting1:
                 place = m_group.m_places.get(0);
@@ -421,7 +419,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         setMeeting(m_group.m_meeting);
         if(place != null){
             MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating);
+                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating + "\n" + moreInfo);
             m_Map.addMarker(marker);
         }
     }
@@ -432,7 +430,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             m_btnVote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO CREATE EVENT
                     Toast.makeText(getApplicationContext(), "Creating Event", Toast.LENGTH_SHORT).show();
                     View child = getLayoutInflater().inflate(R.layout.content_map_meeting, null);
                     View frag = (View)findViewById(R.id.map);
@@ -448,7 +445,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             m_btnVote.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View view) {
-                    //TODO CREATE EVENT
                     Toast.makeText(getApplicationContext(), R.string.wait_event, Toast.LENGTH_SHORT).show();
                     m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
                 }
