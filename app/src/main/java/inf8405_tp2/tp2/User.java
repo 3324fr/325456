@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.PropertyName;
 
 import java.util.ArrayList;
 
@@ -18,8 +19,12 @@ import java.util.ArrayList;
 @IgnoreExtraProperties
 public class User {
 
+    @Exclude
+    final static String PROPERTY_LOCATION = "Location";
+
     public Profile m_profile;
 
+    @PropertyName(PROPERTY_LOCATION)
     public SuperLocation m_CurrentLocation;
 
     public User(){
