@@ -4,6 +4,7 @@ import android.location.Location;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.PropertyName;
 
 /**
  * Created by 422234 on 2017-03-03.
@@ -11,13 +12,19 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 public class Meeting {
 
-    public Meeting(){
-
-    }
+    @Exclude
+    final static String PROPERTY_PLACE = "Place";
 
     private int chosenPlace;
 
-    public Place[] placeArray;
+    @PropertyName(PROPERTY_PLACE)
+    public Place m_place;
+
+    public Meeting(){}
+
+    public Meeting(Place place){
+        this.m_place = place;
+    }
 
 
 }

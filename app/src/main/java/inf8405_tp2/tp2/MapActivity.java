@@ -82,6 +82,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private Button m_btnVote;
     private LocationManager locationManager;
     private ScheduledExecutorService scheduler;
+    private LinearLayout m_layoutRoot;
+    private final int GRAY_ALPHA = 32;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,14 +95,21 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         mapFragment.getMapAsync(this);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
+        m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
-        m_btnVote.getBackground().setAlpha(32);
+
         this.m_group = ourInstance.getGroup();
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
+        if(m_group.m_places.size() == 3){
+            m_btnVote.getBackground().setAlpha(255);
+            if(m_group.userAllVoted()){
+                UpdateButtonAfterVote(m_layoutRoot);
+            }
+        } else {
+            m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
+        }
     }
 
     @Override
@@ -175,8 +184,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
             SetOnMapListener();
-
-
             try {
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
@@ -192,7 +199,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                         CreateMarker(m_group);
                                         User user = ourInstance.getUser();
                                         user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
-                                        if(m_group.m_places.size() >= 3){
+                                        if(m_group.m_places.size() == 3){
                                             m_btnVote.getBackground().setAlpha(255);
                                         }
                                     }
@@ -219,7 +226,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }
 
     public void CreateMarker(Group m_group){
-        if(m_group.m_places.size() == 3){
+        if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
             for(Place place : m_group.m_places){
                 if(place != null){
                     MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
@@ -240,10 +247,18 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     p = localProfile;
                 }
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(loc.getLatitude(),loc.getLongitude()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(p.m_picture))
                         .title(p.m_name);
+                if(p.m_picture != null){
+                    marker.icon(BitmapDescriptorFactory.fromBitmap(p.m_picture));
+                }
                 m_Map.addMarker(marker);
             }
+        }
+        if(m_group.m_meeting != null){
+            Place place = m_group.m_meeting.m_place;
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating);
+            m_Map.addMarker(marker);
         }
     }
 
@@ -254,6 +269,25 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         List<Button> listBtn = new ArrayList<>(Arrays.asList(btn1, btn2, btn3));
         for(int i = 0; i < listBtn.size(); ++i){
             listBtn.get(i).setText(m_group.m_places.get(i).m_name);
+        }
+        LinearLayout ll = (LinearLayout)findViewById(R.id.maps);
+        ll.invalidate();
+    }
+
+    private void updateMeetingTextField() {
+        Button btn1 = (Button)findViewById(R.id.btn_meeting1);
+        Button btn2 = (Button)findViewById(R.id.btn_meeting2);
+        Button btn3 = (Button)findViewById(R.id.btn_meeting3);
+        List<Button> listBtn = new ArrayList<>(Arrays.asList(btn1, btn2, btn3));
+        for(int i = 0; i < listBtn.size(); ++i){
+            listBtn.get(i).setText(m_group.m_places.get(i).m_name);
+        }
+        TextView tv1 = (TextView)findViewById(R.id.textViewRating1);
+        TextView tv2 = (TextView)findViewById(R.id.textViewRating2);
+        TextView tv3 = (TextView)findViewById(R.id.textViewRating3);
+        List<TextView> listTv = new ArrayList<>(Arrays.asList(tv1, tv2, tv3));
+        for(int i = 0; i < listBtn.size(); ++i){
+            listTv.get(i).setText(String.format("Rating : %d", m_group.m_places.get(i).m_finalRating));
         }
         LinearLayout ll = (LinearLayout)findViewById(R.id.maps);
         ll.invalidate();
@@ -297,91 +331,54 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
 
             @Override
             public void onMapLongClick(LatLng latLng) {
-                if(m_group.m_places.size() < 3){
-                    Intent i = new Intent(MapActivity.this, PlaceActivity.class);
-                    i.putExtra(MESSAGE_LAT_LNG,latLng);
-                    i.putExtra(MESSAGE_GROUP_NAME,m_group.m_name);
-                    startActivity(i);
+                if(doubleCheckManager()){
+                    if(m_group.m_places.size() < 3){
+                        Intent i = new Intent(MapActivity.this, PlaceActivity.class);
+                        i.putExtra(MESSAGE_LAT_LNG,latLng);
+                        i.putExtra(MESSAGE_GROUP_NAME,m_group.m_name);
+                        startActivity(i);
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You are not the manager.", Toast.LENGTH_LONG);
                 }
+
             }
 
-        });/*
-        m_Map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                //View popUp = getLayoutInflater().inflate(R.layout.map_popup, map, false);
-                return false;
-            }
-        });*/
+        });
     }
 
-    /*
-    public void onClickPlace(View view){
-        RatingBar rb;
-        switch (view.getId()){
-            case (R.id.btn_place1):
-                rb = (RatingBar)findViewById(R.id.ratingBar1);
-                m_group.m_places.get(0).m_vote = (int)rb.getRating();
-                break;
-            case (R.id.btn_place2):
-                rb = (RatingBar)findViewById(R.id.ratingBar2);
-                m_group.m_places.get(1).m_vote = (int)rb.getRating();
-                break;
-            case (R.id.btn_place3):
-                rb = (RatingBar)findViewById(R.id.ratingBar3);
-                m_group.m_places.get(2).m_vote = (int)rb.getRating();
-                break;
-        }
-    }*/
-
     public void OnClickVote(View view){
-
+        if(m_group.m_meeting != null){
+            Toast.makeText(getApplicationContext(), "Event exist. No more vote allowed", Toast.LENGTH_LONG).show();
+            return;
+        }
         if(!ourInstance.getUser().getVote()){
             View child = getLayoutInflater().inflate(R.layout.content_map, null);
             if(view.getId() == R.id.btn_vote_start){
-                if(m_group.m_places.size() >=3 ){
+                if(m_group.m_places.size() ==3 ){
                     m_btnVote.setText(R.string.vote_en_cours);
                     View frag = (View)findViewById(R.id.map);
                     frag.setVisibility(View.INVISIBLE);
                     LinearLayout item = (LinearLayout)findViewById(R.id.maps);
-                    ArrayList<View> viewList = new ArrayList<View>();
                     item.addView(child, 0);
                     updateButtonTextField();
                 } else {
-                    final PopupWindow popUpWindow = new PopupWindow(this);
-                    popUpWindow.showAtLocation(((LinearLayout)findViewById(R.id.maps)), Gravity.CENTER, 0, 0);
-                    RelativeLayout containerLayout = new RelativeLayout(this);
-                    TextView msg = new TextView(this);
-                    msg.setText(R.string.trois_lieux);
-
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
-                    containerLayout.addView(msg, layoutParams);
-                    popUpWindow.setContentView(containerLayout);
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // close your dialog
-                            popUpWindow.dismiss();
-                        }
-                    }, 3000);
+                    Toast.makeText(this, "Three locations to be marked", Toast.LENGTH_SHORT).show();
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
-                LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+
                 child = (LinearLayout)findViewById(R.id.map_content);
                 SetRating();
-                if(item.getChildAt(0) == child){
+                if(m_layoutRoot.getChildAt(0) == child){
                     //second attempt to remove inflated
                     //child.setVisibility(View.GONE);
-                    item.removeViewAt(0);
+                    m_layoutRoot.removeViewAt(0);
                 }
-                Button btn = (Button)findViewById(R.id.btn_vote_start);
-                item.removeView(btn);
+                UpdateButtonAfterVote(m_layoutRoot);
                 View frag = (View)findViewById(R.id.map);
                 frag.setVisibility(View.VISIBLE);
-                item.invalidate();
+                m_layoutRoot.invalidate();
                 Group group =  this.m_group;
                 User user = ourInstance.getUser();
                 String userNum = String.valueOf(group.m_users.indexOf(user));
@@ -390,17 +387,80 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                 groupRef.setValue(true);
                 ourInstance.getUser().setVote(true);
             }
+        } else {
+            Toast.makeText(this, "You already voted!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void OnClickPlace(View view){
+        m_Map.clear();
+        Place place = null;
+        switch (view.getId()){
+            case R.id.btn_meeting1:
+                place = m_group.m_places.get(0);
+                m_group.m_meeting = new Meeting(place);
+                break;
+            case R.id.btn_meeting2:
+                place = m_group.m_places.get(1);
+                m_group.m_meeting = new Meeting(place);
+                break;
+            case R.id.btn_meeting3:
+                place = m_group.m_places.get(2);
+                m_group.m_meeting = new Meeting(place);
+                break;
+        }
+        LinearLayout child = (LinearLayout)findViewById(R.id.map_content_meeting);
+        if(m_layoutRoot.getChildAt(0) == child){
+            m_layoutRoot.removeViewAt(0);
+        }
+        View frag = (View)findViewById(R.id.map);
+        frag.setVisibility(View.VISIBLE);
+        m_layoutRoot.invalidate();
+        setMeeting(m_group.m_meeting);
+        if(place != null){
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating);
+            m_Map.addMarker(marker);
+        }
+    }
+
+    private void UpdateButtonAfterVote(LinearLayout item) {
+        m_btnVote.setText(R.string.create_event);
+        if(doubleCheckManager()){
+            m_btnVote.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //TODO CREATE EVENT
+                    Toast.makeText(getApplicationContext(), "Creating Event", Toast.LENGTH_SHORT).show();
+                    View child = getLayoutInflater().inflate(R.layout.content_map_meeting, null);
+                    View frag = (View)findViewById(R.id.map);
+                    frag.setVisibility(View.INVISIBLE);
+                    LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+                    item.addView(child, 0);
+                    updateMeetingTextField();
+                    m_btnVote.setVisibility(View.INVISIBLE);
+                }
+            });
+            m_btnVote.setVisibility(View.VISIBLE);
+        } else {
+            m_btnVote.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    //TODO CREATE EVENT
+                    Toast.makeText(getApplicationContext(), R.string.wait_event, Toast.LENGTH_SHORT).show();
+                    m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
+                }
+            });
         }
     }
 
     private void SetRating() {
         RatingBar rb;
-        rb = (RatingBar)findViewById(R.id.ratingBar1);
-        m_group.m_places.get(0).m_rating.add(Math.floor(rb.getRating()));
-        rb = (RatingBar)findViewById(R.id.ratingBar2);
-        m_group.m_places.get(1).m_rating.add(Math.floor(rb.getRating()));
-        rb = (RatingBar)findViewById(R.id.ratingBar3);
-        m_group.m_places.get(2).m_rating.add(Math.floor(rb.getRating()));
+        Integer[]rbs = {R.id.ratingBar1, R.id.ratingBar2, R.id.ratingBar3};
+        for(int i = 0; i < rbs.length; ++i){
+            rb = (RatingBar)findViewById(rbs[i]);
+            m_group.m_places.get(i).m_rating.add(Math.floor(rb.getRating()));
+        }
         updateAllRating();
         setPlaceRatings();
     }
@@ -412,7 +472,6 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     }
 
     public void setPlaceRatings() {
-
         try{
             Group group =  m_group;
             for(Place place : group.m_places) {
@@ -431,5 +490,25 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+
+    public void setMeeting(Meeting meeting) {
+        try{
+            Group group =  m_group;
+            DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+                    .child(Group.PROPERTY_MEETING);
+            groupRef.setValue(meeting);
+            Toast.makeText(getApplicationContext(), "Meeting created", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private boolean doubleCheckManager(){
+        if(m_group.isManager(ourInstance.getUser()) || m_group.m_manager.equals(ourInstance.getUser()))
+            return true;
+        return false;
     }
 }

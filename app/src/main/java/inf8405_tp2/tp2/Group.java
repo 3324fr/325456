@@ -20,12 +20,15 @@ final public class Group {
     @Exclude
     final static String PROPERTY_USERS = "usersList";
     final static String PROPERTY_PLACES = "placeList";
+    final static String PROPERTY_MEETING = "meeting";
 
     public String m_name = "Default Group";
     public Manager m_manager;
     @PropertyName(PROPERTY_USERS)
     public List<User> m_users;
-    public List<Meeting> m_meetings;
+
+    @PropertyName(PROPERTY_MEETING)
+    public Meeting m_meeting;
 
     @PropertyName(PROPERTY_PLACES)
     public List<Place> m_places;
@@ -33,9 +36,9 @@ final public class Group {
     public  Group(){
 
         this.m_users =  new ArrayList<>();
-        this.m_meetings = new ArrayList<>();
         this.m_places = new ArrayList<>();
         this.m_manager = new Manager();
+        this.m_meeting = null;
     }
     public  Group(Manager manager, String name){
         this();
@@ -44,11 +47,10 @@ final public class Group {
         }
         this.m_manager = manager;
         this.m_name = name;
-        this.m_meetings = new ArrayList<>();
         this.m_places = new ArrayList<>();
         this.m_users = new ArrayList<>();
         this.m_users.add(manager);
-
+        this.m_meeting = null;
     }
 
     @Exclude
@@ -64,12 +66,7 @@ final public class Group {
 
     @Exclude
     public Boolean isManager(User user){
-        if(user == this.m_manager) {
-            return false;
-        }
-        else{
-            return true;
-        }
+        return user == this.m_manager ?  true : false;
     }
 
     @Exclude
@@ -101,4 +98,13 @@ final public class Group {
     }
 
 
+    @Exclude
+    public Boolean userAllVoted(){
+        for(User user : this.m_users){
+            if(user.getVote() == false){
+                return false;
+            }
+        }
+        return true;
+    }
 }
