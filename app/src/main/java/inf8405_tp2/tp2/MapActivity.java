@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -59,6 +60,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MapActivity extends FragmentActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
@@ -76,6 +80,8 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private static SharedPreferences sharedPref;
     private ValueEventListener valEventList;
     private Button m_btnVote;
+    private LocationManager locationManager;
+    private ScheduledExecutorService scheduler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +97,9 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
         m_btnVote.getBackground().setAlpha(32);
         this.m_group = ourInstance.getGroup();
+
+        // Acquire a reference to the system Location Manager
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
     }
 
@@ -123,6 +132,36 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
+
+        // Define a scheduler that responds to location update every mintime
+        this.scheduler =
+                Executors.newScheduledThreadPool(5);
+        this.scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                // Do stuff here!
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Log.d(TAG, "Location Update");
+                        final Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        criteria.setAltitudeRequired(false);
+                        criteria.setBearingRequired(false);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        if (!provider.isEmpty() && ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+                                == PackageManager.PERMISSION_GRANTED) {
+                            m_Map.setMyLocationEnabled(true);
+                            Location loc = locationManager.getLastKnownLocation(provider);
+                            setUserLocation(loc);
+                        }
+
+                    }
+                });
+            }
+        }, 0, Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")), TimeUnit.SECONDS);
         map();
     }
 
@@ -139,21 +178,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             m_Map.setMyLocationEnabled(true);
             SetOnMapListener();
 
-            // Acquire a reference to the system Location Manager
-            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-
-            // todo check GPS provider
-            Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            setUserLocation(loc);
-
-            // Define a listener that responds to location updates
-            LocationListener locationListener = locationListener();
-            //  minimum time interval between location updates, in milliseconds
-            int minTime = Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")) * 1000;
-            // Register the listener with the Location Manager to receive location updates
-
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,100, 1,locationListener);
             try {
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
@@ -172,7 +197,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                         }
                                     }
                                 }
-                                catch (Exception e) {//todo
+                                catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -245,30 +270,14 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         return null;
     }
 
-    public LocationListener  locationListener(){
-        return new LocationListener() {
-            public void onLocationChanged(Location location) {
-                // Called when a new location is found by the network location provider.
-                setUserLocation(location);
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            public void onProviderEnabled(String provider) {}
-
-            public void onProviderDisabled(String provider) {}
-        };
-    }
-
-
     public void setUserLocation(final Location loc) {
 
         Group group =  this.m_group;
         User user = ourInstance.getUser();
         if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.contains(user)) {
 
-                String userNum = String.valueOf(group.m_users.indexOf(user));
-             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
+            String userNum = String.valueOf(group.m_users.indexOf(user));
+            DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_LOCATION);
             groupRef.setValue(loc);
         }
