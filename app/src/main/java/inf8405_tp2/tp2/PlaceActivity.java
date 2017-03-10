@@ -90,7 +90,7 @@ public class PlaceActivity extends AppCompatActivity {
             }
             place.m_name = ((EditText)findViewById(R.id.editText_place_name)).getText().toString();
 
-            place.m_vote = 10;
+            place.m_finalRating = 5.0;
             Location loc = new Location(place.m_name);
             loc.setLatitude(m_latLng.latitude);
             loc.setLongitude(m_latLng.longitude);

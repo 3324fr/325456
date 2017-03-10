@@ -197,7 +197,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
             for(Place place : m_group.m_places){
                 if(place != null){
                     MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                            .title(place.m_name).snippet("Rating : " + place.m_vote);
+                            .title(place.m_name).snippet("Rating : " + place.m_finalRating);
                     m_Map.addMarker(marker);
                 }
             }
@@ -375,10 +375,11 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
     private void SetRating() {
         RatingBar rb;
         rb = (RatingBar)findViewById(R.id.ratingBar1);
-        m_group.m_places.get(0).m_vote =  (int)Math.floor(rb.getRating());
+        m_group.m_places.get(0).m_rating.add(Math.floor(rb.getRating()));
         rb = (RatingBar)findViewById(R.id.ratingBar2);
-        m_group.m_places.get(1).m_vote = (int)Math.floor(rb.getRating());
+        m_group.m_places.get(1).m_rating.add(Math.floor(rb.getRating()));
         rb = (RatingBar)findViewById(R.id.ratingBar3);
-        m_group.m_places.get(2).m_vote = (int)Math.floor(rb.getRating());
+        m_group.m_places.get(2).m_rating.add(Math.floor(rb.getRating()));
+        ourInstance.updateAllRating();
     }
 }

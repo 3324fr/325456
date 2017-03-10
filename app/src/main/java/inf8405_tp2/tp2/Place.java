@@ -7,6 +7,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by 422234 on 2017-03-04.
  */
@@ -15,12 +18,21 @@ import com.google.firebase.database.IgnoreExtraProperties;
 public class Place {
 
     public Place(){
-
     }
 
     public String m_name;
     public SuperLocation m_loc;
-    public int m_vote;
+    public List<Double> m_rating = new ArrayList<>();
+    public Double m_finalRating;
+
+    @Exclude
+    public void calculateRating(){
+        double temp = 0;
+        for(Double rate : m_rating){
+            temp+=rate;
+        }
+        m_finalRating = temp / m_rating.size();
+    }
 
     @Exclude
     public byte[] image;
