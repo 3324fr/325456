@@ -95,11 +95,16 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
-        m_btnVote.getBackground().setAlpha(32);
+
         this.m_group = ourInstance.getGroup();
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if(m_group.m_places.size() == 3){
+            m_btnVote.getBackground().setAlpha(255);
+        } else {
+            m_btnVote.getBackground().setAlpha(32);
+        }
     }
 
     @Override
@@ -193,7 +198,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                                         CreateMarker(m_group);
                                         User user = ourInstance.getUser();
                                         user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
-                                        if(m_group.m_places.size() >= 3){
+                                        if(m_group.m_places.size() == 3){
                                             m_btnVote.getBackground().setAlpha(255);
                                         }
                                     }
@@ -241,8 +246,10 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
                     p = localProfile;
                 }
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(loc.getLatitude(),loc.getLongitude()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(p.m_picture))
                         .title(p.m_name);
+                if(p.m_picture != null){
+                    marker.icon(BitmapDescriptorFactory.fromBitmap(p.m_picture));
+                }
                 m_Map.addMarker(marker);
             }
         }
@@ -314,7 +321,7 @@ public class MapActivity extends FragmentActivity implements  OnMapReadyCallback
         if(!ourInstance.getUser().getVote()){
             View child = getLayoutInflater().inflate(R.layout.content_map, null);
             if(view.getId() == R.id.btn_vote_start){
-                if(m_group.m_places.size() >=3 ){
+                if(m_group.m_places.size() ==3 ){
                     m_btnVote.setText(R.string.vote_en_cours);
                     View frag = (View)findViewById(R.id.map);
                     frag.setVisibility(View.INVISIBLE);
