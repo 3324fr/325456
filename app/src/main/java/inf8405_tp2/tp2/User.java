@@ -27,7 +27,6 @@ public class User {
     }
 
     public User(Profile profile){
-        this();
         this.m_profile = profile;
     }
 
@@ -41,8 +40,6 @@ public class User {
     @Exclude
     public void setCurrentLocation(Location loc){
         this.m_CurrentLocation = new SuperLocation(loc);
-
-        Log.d("NewLoc", loc.getLatitude() + "");
     }
 
     @Exclude
@@ -58,7 +55,12 @@ public class User {
         User that = (User) other;
 
         // Custom equality check here.
-        return this.m_profile == that.m_profile;
+        return this.m_profile.equals(that.m_profile);
+    }
+
+    @Override
+    public int hashCode() {
+        return m_profile.hashCode();
     }
 
 }

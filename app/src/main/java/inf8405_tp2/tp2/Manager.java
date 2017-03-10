@@ -21,4 +21,5 @@ public class Manager extends User {
         activity.visit(this);
     }
 
+
 }
