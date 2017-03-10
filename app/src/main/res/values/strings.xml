@@ -26,4 +26,5 @@
     <string name="place1">Place1</string>
     <string name="place3">Place3</string>
     <string name="place2">Place2</string>
+    <string name="start_vote">Start Vote</string>
 </resources>

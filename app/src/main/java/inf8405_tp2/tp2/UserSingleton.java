@@ -80,23 +80,25 @@ public class UserSingleton {
                     try{
                         final Group group = postSnapshot.getValue(Group.class);
                         for (User user : group.getUsers()) {
-                            final String profileName = user.m_profile.m_name;
-                            if (!listSQLite.contains(profileName)) {
-                                m_UserPictureRef.child(profileName).getBytes(Long.MAX_VALUE)
-                                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                                            @Override
-                                            public void onSuccess(byte[] bytes) {
-                                                // Use the bytes to display the image
-                                                Bitmap bitmap = BitmapFactory
-                                                        .decodeByteArray(bytes, 0, bytes.length);
-                                                Profile profile = new Profile(profileName, bitmap);
-                                                SQLiteDatabase db_write =
-                                                        UserSingleton.m_sqLitehelper
-                                                                .getWritableDatabase();
-                                                profile.save(db_write);
-                                                db_write.close();
-                                            }
-                                        });
+                            if(user != null && user.m_profile != null){
+                                final String profileName = user.m_profile.m_name;
+                                if (!listSQLite.contains(profileName)) {
+                                    m_UserPictureRef.child(profileName).getBytes(Long.MAX_VALUE)
+                                            .addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                @Override
+                                                public void onSuccess(byte[] bytes) {
+                                                    // Use the bytes to display the image
+                                                    Bitmap bitmap = BitmapFactory
+                                                            .decodeByteArray(bytes, 0, bytes.length);
+                                                    Profile profile = new Profile(profileName, bitmap);
+                                                    SQLiteDatabase db_write =
+                                                            UserSingleton.m_sqLitehelper
+                                                                    .getWritableDatabase();
+                                                    profile.save(db_write);
+                                                    db_write.close();
+                                                }
+                                            });
+                                }
                             }
                         }}
                     catch(Exception e){
