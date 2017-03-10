@@ -238,12 +238,5 @@ public class UserSingleton {
         }
 
     }
-
-    public void updateAllRating(){
-        for(Place place : m_group.m_places){
-            place.calculateRating();
-        }
-
-    }
 }
 

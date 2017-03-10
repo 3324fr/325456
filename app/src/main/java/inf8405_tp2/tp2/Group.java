@@ -19,13 +19,15 @@ final public class Group {
 
     @Exclude
     final static String PROPERTY_USERS = "usersList";
-
+    final static String PROPERTY_PLACES = "placeList";
 
     public String m_name = "Default Group";
     public Manager m_manager;
     @PropertyName(PROPERTY_USERS)
     public List<User> m_users;
     public List<Meeting> m_meetings;
+
+    @PropertyName(PROPERTY_PLACES)
     public List<Place> m_places;
 
     public  Group(){
