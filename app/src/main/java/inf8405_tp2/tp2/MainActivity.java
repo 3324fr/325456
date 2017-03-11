@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         m_profile = userS.getUserProfile();
-        Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
         picture();
     }
     @Override

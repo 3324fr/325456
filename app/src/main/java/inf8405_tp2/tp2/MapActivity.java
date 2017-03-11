@@ -61,6 +61,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -405,9 +406,12 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         Group group =  this.m_group;
         User user = ourInstance.getUser();
         if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.containsValue(user)) {
+            m_group.m_users.get(user.m_profile.m_name).setCurrentLocation(loc);
+            m_group.m_users.put(user.m_profile.m_name, user);
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_USERS).child(user.m_profile.m_name).child(User.PROPERTY_LOCATION);
             groupRef.setValue(loc);
+
         }
     }
 
