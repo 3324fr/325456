@@ -41,7 +41,6 @@ public class UserSingleton {
 
     private  static User m_user;
     private  static Group m_group;
-    private  static Boolean m_isLogin = false;
 
     public static UserSingleton getInstance(Context context) {
 
@@ -63,10 +62,6 @@ public class UserSingleton {
 
     private UserSingleton(Context context) {
         m_Ctx = context;
-    }
-
-    public Boolean isLogin(){
-        return m_isLogin;
     }
 
     public String[] getAllUsername() {
@@ -128,10 +123,8 @@ public class UserSingleton {
     }
     public Profile login(String userName){
         Profile profile = getUserProfile(userName);
-        if(profile != null && !m_isLogin){
-            UserSingleton.m_user.m_profile = profile;
-            UserSingleton.m_isLogin = true;
-        }
+        UserSingleton.m_user.m_profile = profile;
+
         return profile;
     }
 
@@ -153,7 +146,6 @@ public class UserSingleton {
 
 
     public void setM_user(Profile profile) {
-        UserSingleton.m_isLogin = true;
         SQLiteDatabase db = m_sqLitehelper.getWritableDatabase();
         profile.save(db, m_UserPictureRef);
         db.close();

@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // create the fragment and data the first time
-        if (m_userFragment == null && !userS.isLogin()) {
+        if (m_userFragment == null) {
             // add the fragment
             m_userFragment = new UserFragment();
             fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
