@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="3">
+    <Button
+        android:text="@string/participate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_participate"
+        android:layout_weight="1"
+        android:onClick="OnClickParticipate"/>
+    <Button
+        android:text="@string/maybe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_maybe"
+        android:layout_weight="1"
+        android:onClick="OnClickParticipate"/>
+    <Button
+        android:text="@string/decline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_decline"
+        android:layout_weight="1"
+        android:onClick="OnClickParticipate"/>
+</LinearLayout>

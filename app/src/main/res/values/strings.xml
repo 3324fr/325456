@@ -40,5 +40,8 @@
     <string name="quir">Quit group</string>
     <string name="ok">Ok</string>
     <string name="event_exists">Event already exists</string>
+    <string name="participate">Participate</string>
+    <string name="maybe">Maybe</string>
+    <string name="decline">Decline</string>
 
 </resources>

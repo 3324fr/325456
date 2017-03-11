@@ -239,6 +239,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                                         // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                         m_Map.clear();
                                         CreateMarker(m_group);
+                                        ParticipateEvent();
                                         User user = ourInstance.getUser();
                                         user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
                                         if(m_group.m_places.size() == 3){
@@ -320,6 +321,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 // Defines the contents of the InfoWindow
                 @Override
                 public View getInfoContents(Marker arg0) {
+
                     // Getting view from the layout file info_window_layout
                     View v = getLayoutInflater().inflate(R.layout.custom_infowind, null);
                     ((TextView) v.findViewById(R.id.tv_title)).setText(m_group.m_meeting.m_place.m_name);
@@ -330,7 +332,20 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     ((TextView) v.findViewById(R.id.tv_start)).setText("Start Time:" + m_group.m_meeting.m_startTime);
                     ((TextView) v.findViewById(R.id.tv_end)).setText("End Time:" + m_group.m_meeting.m_endTime);
                     ((TextView) v.findViewById(R.id.tv_info)).setText("Infos:" + m_group.m_meeting.m_info);
+                    ((TextView) v.findViewById(R.id.tv_participants)).setText("Participants:" + getStringFromArray(m_group.m_meeting.m_participants));
+                    ((TextView) v.findViewById(R.id.tv_maybe)).setText("Maybe:" + getStringFromArray(m_group.m_meeting.m_maybe));
+                    ((TextView) v.findViewById(R.id.tv_decline)).setText("Declined:" + getStringFromArray(m_group.m_meeting.m_decline));
                     return v;
+                }
+
+                private String getStringFromArray(List<User> list) {
+                    StringBuilder sb = new StringBuilder();
+                    for (User user : list)
+                        {
+                        sb.append(user.m_profile.m_name);
+                        sb.append("\t");
+                    }
+                    return sb.toString();
                 }
             });
             Place place = m_group.m_meeting.m_place;
@@ -569,7 +584,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
-
     public void setMeeting(Meeting meeting) {
         try{
             Group group =  m_group;
@@ -585,5 +599,62 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     private boolean doubleCheckManager(){
         return (m_group.isManager(ourInstance.getUser()) || m_group.m_manager.equals(ourInstance.getUser()));
+    }
+
+    private void ParticipateEvent() {
+        if(m_group.m_meeting != null){
+            View child = getLayoutInflater().inflate(R.layout.content_map_participation, null);
+            m_layoutRoot.removeView(m_btnVote);
+            m_layoutRoot.addView(child);
+        }
+    }
+
+    public void OnClickParticipate(View view){
+        DatabaseReference groupRef = null;
+        User user = ourInstance.getUser();
+        boolean update = false;
+        switch(view.getId()){
+            case R.id.btn_participate:
+                update |= addUserToList(m_group.m_meeting.m_participants, user);
+                update |= removeUserToList(m_group.m_meeting.m_maybe, user);
+                update |= removeUserToList(m_group.m_meeting.m_decline, user);
+
+                break;
+            case R.id.btn_maybe:
+                update |= addUserToList(m_group.m_meeting.m_maybe, user);
+                update |= removeUserToList(m_group.m_meeting.m_decline, user);
+                update |= removeUserToList(m_group.m_meeting.m_participants, user);
+                break;
+            case R.id.btn_decline:
+                update |= addUserToList(m_group.m_meeting.m_decline, user);
+                update |= removeUserToList(m_group.m_meeting.m_maybe, user);
+                update |= removeUserToList(m_group.m_meeting.m_participants, user);
+                break;
+        }
+        if(update){
+            groupRef = ourInstance.getGroupref().child(m_group.m_name).child(Group.PROPERTY_MEETING).child(Meeting.PROPERTY_PARTICIPANTS);
+            groupRef.setValue(m_group.m_meeting.m_participants);
+            groupRef = ourInstance.getGroupref().child(m_group.m_name).child(Group.PROPERTY_MEETING).child(Meeting.PROPERTY_MAYBE);
+            groupRef.setValue(m_group.m_meeting.m_maybe);
+            groupRef = ourInstance.getGroupref().child(m_group.m_name).child(Group.PROPERTY_MEETING).child(Meeting.PROPERTY_DECLINE);
+            groupRef.setValue(m_group.m_meeting.m_decline);
+        }
+
+    }
+
+    public boolean addUserToList(List<User> list, User user){
+        if(!list.contains(user)){
+            list.add(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeUserToList(List<User> list, User user){
+        if(list.contains(user)){
+            list.remove(user);
+            return true;
+        }
+        return false;
     }
 }
