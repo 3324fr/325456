@@ -178,10 +178,10 @@ public class UserSingleton {
                             // promote user to manager
                             UserSingleton.m_user =  m_group.m_manager;
                         }
-                        if (!m_group.m_users.contains(UserSingleton.m_user))
+                        if (!m_group.m_users.containsKey(UserSingleton.m_user.m_profile.m_name))
                         {
-                            m_group.m_users.add(m_user);
-                            groupRef.child(Group.PROPERTY_USERS).child(String.valueOf(m_group.m_users.indexOf(m_user))).setValue(m_user);
+                            m_group.add(m_user);
+                            groupRef.child(Group.PROPERTY_USERS).child(UserSingleton.m_user.m_profile.m_name).setValue(m_user);
                         }
                     }
                 }
@@ -197,8 +197,9 @@ public class UserSingleton {
         if(m_group == null || m_group.m_name.isEmpty())
             return "";
         if(m_user.m_profile.m_name != null){
+            m_group.remove(m_user);
             m_GroupRef.child(m_group.m_name).child(Group.PROPERTY_USERS)
-                    .child(String.valueOf(m_group.m_users.indexOf(m_user))).removeValue();
+                    .child(m_user.m_profile.m_name).removeValue();
         }
          return m_group.m_name;
     }

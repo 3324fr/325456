@@ -8,7 +8,10 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 422234 on 2017-02-28.
@@ -25,7 +28,7 @@ final public class Group {
     public String m_name = "Default Group";
     public Manager m_manager;
     @PropertyName(PROPERTY_USERS)
-    public List<User> m_users;
+    public HashMap<String,User> m_users;
 
     @PropertyName(PROPERTY_MEETING)
     public Meeting m_meeting;
@@ -35,7 +38,7 @@ final public class Group {
 
     public  Group(){
 
-        this.m_users =  new ArrayList<>();
+        this.m_users =  new HashMap<>();
         this.m_places = new ArrayList<>();
         this.m_manager = new Manager();
         this.m_meeting = null;
@@ -48,21 +51,10 @@ final public class Group {
         this.m_manager = manager;
         this.m_name = name;
         this.m_places = new ArrayList<>();
-        this.m_users = new ArrayList<>();
-        this.m_users.add(manager);
+        this.m_users = new HashMap<>();
+        this.m_users.put(manager.m_profile.m_name,manager);
         this.m_meeting = null;
     }
-
-    @Exclude
-    public Boolean isMember(User user){
-        if(this.m_users.contains(user) || user == this.m_manager) {
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
 
     @Exclude
     public Boolean isManager(User user){
@@ -71,37 +63,25 @@ final public class Group {
 
     @Exclude
     public List<User> getUsers(){
-        List<User> tmp = this.m_users;
-        tmp.add(m_manager);
-        return tmp;
-    }
-    @Exclude
-    public Boolean updateLoc(User user,Location loc){
-        if(loc != null) {
-             if (m_users.contains(user)) {
-                this.m_users.get(this.m_users.indexOf(user)).setCurrentLocation(loc);
-                return true;
-            }
-        }
-        return false;
+        return new ArrayList<>(this.m_users.values());
     }
 
     @Exclude
-    public Location getLocation(User user){
-        if(user == this.m_manager){
-            return this.m_manager.getCurrentLocation();
-        }
-        else if(m_users.contains(user)) {
-            return this.m_users.get(this.m_users.indexOf(user)).getCurrentLocation();
-        }
-        return null;
+    public void add(User user){
+       this.m_users.put(user.m_profile.m_name,user);
     }
 
+    @Exclude
+    public void remove(User user){
+        this.m_users.remove(user.m_profile.m_name);
+    }
 
     @Exclude
     public Boolean userAllVoted(){
-        for(User user : this.m_users){
-            if(user.getVote() == false){
+        Iterator it = this.m_users.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            if(((User)pair.getValue()).getVote() == false){
                 return false;
             }
         }

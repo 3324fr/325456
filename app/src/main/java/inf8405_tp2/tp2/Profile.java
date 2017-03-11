@@ -35,7 +35,7 @@ public class Profile {
     }
 
     public Profile() {
-        m_name = "";
+        m_name = "name by default";
     }
 
     @Override
@@ -50,7 +50,6 @@ public class Profile {
         // Custom equality check here.
         return this.m_name.equals(toCompare);
     }
-
 
     @Exclude
     public void save(SQLiteDatabase db,StorageReference pictureRef ) {

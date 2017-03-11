@@ -404,10 +404,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
         Group group =  this.m_group;
         User user = ourInstance.getUser();
-        if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.contains(user)) {
-            String userNum = String.valueOf(group.m_users.indexOf(user));
+        if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.containsValue(user)) {
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
-                    .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_LOCATION);
+                    .child(Group.PROPERTY_USERS).child(user.m_profile.m_name).child(User.PROPERTY_LOCATION);
             groupRef.setValue(loc);
         }
     }
@@ -473,9 +472,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 m_layoutRoot.invalidate();
                 Group group =  this.m_group;
                 User user = ourInstance.getUser();
-                String userNum = String.valueOf(group.m_users.indexOf(user));
                 DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
-                        .child(Group.PROPERTY_USERS).child(userNum).child(User.PROPERTY_VOTE);
+                        .child(Group.PROPERTY_USERS).child(user.m_profile.m_name).child(User.PROPERTY_VOTE);
                 groupRef.setValue(true);
                 ourInstance.getUser().setVote(true);
             }
