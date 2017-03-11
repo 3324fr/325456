@@ -14,7 +14,7 @@
         tools:ignore="LabelFor" />
 
     <Button
-        android:text="Button"
+        android:text="@string/ok"
         android:layout_width="174dp"
         android:layout_height="wrap_content"
         android:id="@+id/btn_username"

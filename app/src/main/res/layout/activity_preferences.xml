@@ -24,12 +24,13 @@
         android:layout_above="@+id/button2" />
 
     <Button
-        android:text="Button"
+        android:text="@string/quit_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="44dp"
-        android:id="@+id/button2" />
+        android:id="@+id/button2"
+        android:onClick="quitGroup" />
 
 </RelativeLayout>

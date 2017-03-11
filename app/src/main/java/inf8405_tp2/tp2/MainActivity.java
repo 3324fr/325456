@@ -47,12 +47,17 @@ public class MainActivity extends AppCompatActivity {
     private DialogFragment m_userFragment;
     private Profile m_profile;
     private UserSingleton ourInstance;
+    private FragmentManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
+
+        // find the retained fragment on activity restarts
+        fm = getSupportFragmentManager();
+        m_userFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
     }
 
     @Override
@@ -60,9 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         UserSingleton userS= UserSingleton.getInstance(getApplicationContext());
 
-        // find the retained fragment on activity restarts
-        FragmentManager fm = getSupportFragmentManager();
-        m_userFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
+
 
         // create the fragment and data the first time
         if (m_userFragment == null && !userS.isLogin()) {
@@ -113,6 +116,16 @@ public class MainActivity extends AppCompatActivity {
             m_userFragment.dismiss();
         }
     }
+    public void setting(View view){
+        Intent intent = new Intent(this, PreferencesActivity.class);
+        startActivity(intent);
+    }
+
+    public void OnClickUsername(View view) {
+        m_userFragment = new UserFragment();
+        fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
+    }
+
 
 
     public void OnClickGMap(View view) {
