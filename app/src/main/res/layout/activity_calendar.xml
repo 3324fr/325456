@@ -3,15 +3,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="16dp"
     android:orientation="vertical"
     android:scrollbars="vertical">
 
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
     <TextView
-        android:id="@+id/hello"
+        android:id="@+id/calendar_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
+        android:text="@string/meeting_setup"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
@@ -19,20 +29,34 @@
         android:layout_height="wrap_content"
         android:id="@+id/btn_startHour"
         android:onClick="OnStartHourClicked"
-        android:text="button" />
+        android:text="@string/starttime" />
 
     <Button
-        android:text="Button"
+        android:text="@string/endtime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="OnEndHourClicked"
-        android:id="@+id/btn_sta" />
+        android:id="@+id/btn_endHour" />
 
     <Button
-        android:text="Button"
+        android:text="@string/date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_date"
         android:onClick="OnDateClicked" />
+
+    <Button
+        android:text="@string/confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/calendar_confirm"
+        android:onClick="onClickConfirm" />
+
+    <TextView
+        android:id="@+id/calendar_dateOutput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/meeting"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </LinearLayout>

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -114,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     public void OnClickGMap(View view) {
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
@@ -125,6 +125,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //TODO DELETE before release
+    public void OnClickGMapCheat(View view){
+        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
+        String groupName = editText_group.getText().toString();
+        if(!groupName.isEmpty()) {
+            ourInstance.addUser2Group(groupName);
+            //Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            // create random location place
+            for (int i = 0 ; i < 3; ++i){
+                Place place = new Place();
+                place.m_name = "Random" + i;
+                place.m_finalRating = 0;
+                Location loc = new Location(place.m_name);
+                loc.setLatitude(40.0 + i*5);
+                loc.setLongitude(-5.0 - i*5);
+                place.m_loc = new SuperLocation(loc);
+                ourInstance.createPlace(place, ourInstance.getGroup().m_name);
+            }
+
+            //startActivity(intent);
+        }
+    }
 
     public static class UserFragment extends DialogFragment  {
         static UserFragment newInstance() {

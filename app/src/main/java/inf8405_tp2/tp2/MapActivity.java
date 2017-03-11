@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RatingBar;
@@ -102,21 +103,15 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
-
-        this.m_group = ourInstance.getGroup();
-
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if(m_group.m_places.size() == 3){
-            m_btnVote.getBackground().setAlpha(255);
-            if(m_group.userAllVoted()){
-                UpdateButtonAfterVote(m_layoutRoot);
-            }
-        } else {
-            m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
-        }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+
+    }//onActivityResult
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -213,11 +208,14 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     public void map(){
 
+
+
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
             SetOnMapListener();
             try {
+                updateMemberGroup();
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
                             @Override
@@ -255,6 +253,18 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
         else {
             // Show rationale and request permission.
+        }
+    }
+
+    private void updateMemberGroup() {
+        this.m_group = ourInstance.getGroup();
+        if(m_group.m_places.size() == 3){
+            m_btnVote.getBackground().setAlpha(255);
+            if(m_group.userAllVoted()){
+                UpdateButtonAfterVote(m_layoutRoot);
+            }
+        } else {
+            m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
         }
     }
 
@@ -421,7 +431,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
-    // EVENT CHOOSER IMPORTANT
+    // EVENT CHOOSER IMPORTANT -- CREATE EVENT -- CREATEEVENT
     public void OnClickPlace(View view){
         m_Map.clear();
         Place place = null;
@@ -440,6 +450,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 m_group.m_meeting = new Meeting(place);
                 break;
         }
+        moreInfo = ((EditText)findViewById(R.id.et_meeting_info)).getText().toString();
         LinearLayout child = (LinearLayout)findViewById(R.id.map_content_meeting);
         if(m_layoutRoot.getChildAt(0) == child){
             m_layoutRoot.removeViewAt(0);
@@ -453,6 +464,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating + "\n" + moreInfo);
             m_Map.addMarker(marker);
         }
+        // Start New intent for result calendar
+        Intent intent = new Intent(MapActivity.this, CalendarActivity.class);
+        startActivity(intent);
     }
 
     private void UpdateButtonAfterVote(LinearLayout item) {
@@ -536,8 +550,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     private boolean doubleCheckManager(){
-        if(m_group.isManager(ourInstance.getUser()) || m_group.m_manager.equals(ourInstance.getUser()))
-            return true;
-        return false;
+        return (m_group.isManager(ourInstance.getUser()) || m_group.m_manager.equals(ourInstance.getUser()));
     }
 }

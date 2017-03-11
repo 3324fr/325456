@@ -30,4 +30,10 @@
         android:id="@+id/btn_gmap" />
 
 
+    <Button
+        android:text="@string/dev_cheat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="OnClickGMapCheat"
+        android:id="@+id/btn_cheat" />
 </LinearLayout>
