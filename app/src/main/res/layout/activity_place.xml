@@ -46,11 +46,4 @@
         android:layout_height="wrap_content"
         android:onClick="onClickImage" />
 
-    <Button
-        android:text="@string/menu_confirm"
-        android:layout_width="match_parent"
-        android:id="@+id/confirm_add_new_place"
-        android:onClick="onClickConfirm"
-        android:layout_height="wrap_content" />
-
 </LinearLayout>

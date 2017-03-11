@@ -96,12 +96,8 @@ public class PlaceActivity extends AppCompatActivity {
             loc.setLongitude(m_latLng.longitude);
             place.m_loc = new SuperLocation(loc);
             UserSingleton.getInstance(getApplicationContext()).createPlace(place, m_groupName);
-
+            Intent i = new Intent(PlaceActivity.this, MapActivity.class);
+            startActivity(i);
         }
     }//onActivityResult
-
-    public void onClickConfirm(View view){
-        Intent i = new Intent(PlaceActivity.this, MapActivity.class);
-        startActivity(i);
-    }
 }

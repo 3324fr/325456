@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         m_userFragment = new UserFragment();
         fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
     }
-    
+
     public void OnClickGMap(View view) {
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
