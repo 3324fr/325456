@@ -328,12 +328,12 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     ((TextView) v.findViewById(R.id.tv_rating)).setText("Rating:" + m_group.m_meeting.m_place.m_finalRating);
                     ((TextView) v.findViewById(R.id.tv_lat)).setText("Lat:" + m_group.m_meeting.m_place.m_loc.getLatitude());
                     ((TextView) v.findViewById(R.id.tv_lng)).setText("Long:" + m_group.m_meeting.m_place.m_loc.getLongitude());
-                    ((TextView) v.findViewById(R.id.tv_date)).setText("Date:" + m_group.m_meeting.m_date);
-                    ((TextView) v.findViewById(R.id.tv_start)).setText("Start Time:" + m_group.m_meeting.m_startTime);
+                    ((TextView) v.findViewById(R.id.tv_date)).setText("Date:" + m_group.m_meeting.m_date+ "\t|");
+                    ((TextView) v.findViewById(R.id.tv_start)).setText("Start Time:" + m_group.m_meeting.m_startTime+ "\t|");
                     ((TextView) v.findViewById(R.id.tv_end)).setText("End Time:" + m_group.m_meeting.m_endTime);
                     ((TextView) v.findViewById(R.id.tv_info)).setText("Infos:" + m_group.m_meeting.m_info);
-                    ((TextView) v.findViewById(R.id.tv_participants)).setText("Participants:" + getStringFromArray(m_group.m_meeting.m_participants));
-                    ((TextView) v.findViewById(R.id.tv_maybe)).setText("Maybe:" + getStringFromArray(m_group.m_meeting.m_maybe));
+                    ((TextView) v.findViewById(R.id.tv_participants)).setText("Go:" + getStringFromArray(m_group.m_meeting.m_participants) + "\t|");
+                    ((TextView) v.findViewById(R.id.tv_maybe)).setText("Maybe:" + getStringFromArray(m_group.m_meeting.m_maybe) + "\t|");
                     ((TextView) v.findViewById(R.id.tv_decline)).setText("Declined:" + getStringFromArray(m_group.m_meeting.m_decline));
                     return v;
                 }
