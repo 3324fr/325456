@@ -55,8 +55,7 @@ public class PreferencesActivity extends AppCompatActivity {
     public void quitGroup(View view){
        String groupname = UserSingleton.getInstance(getApplicationContext()).quitGroup();
         Toast.makeText(this, getString(R.string.quir)+ " " + groupname, Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, PreferencesActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        Intent intent = new Intent(this, MainActivity.class);
+        NavUtils.navigateUpTo(this,intent);
     }
 }
