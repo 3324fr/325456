@@ -68,7 +68,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
+public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter {
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
 
@@ -161,11 +161,25 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
+    // Use default InfoWindow frame
+    @Override
+    public View getInfoWindow(Marker arg0) {
+        return null;
+    }
+
+    // SOURCE: http://stackoverflow.com/questions/15090148/custom-info-window-adapter-with-custom-data-in-map-v2
+    // Defines the contents of the InfoWindow
+    @Override
+    public View getInfoContents(Marker arg0) {
+        return null;
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         m_Map = googleMap;
-        m_Map.setOnInfoWindowClickListener(this);
+        // Setting a custom info window adapter for the google map
+        m_Map.setInfoWindowAdapter(this);
+        //m_Map.setOnInfoWindowClickListener(this);
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
@@ -207,9 +221,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void map(){
-
-
-
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
@@ -258,7 +269,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     private void updateMemberGroup() {
         this.m_group = ourInstance.getGroup();
-        if(m_group.m_places.size() == 3){
+        if(m_group.m_places.size() == 3 && m_group.m_meeting == null){
             m_btnVote.getBackground().setAlpha(255);
             if(m_group.userAllVoted()){
                 UpdateButtonAfterVote(m_layoutRoot);
@@ -268,7 +279,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
-    public void CreateMarker(Group m_group){
+    public void CreateMarker(final Group m_group){
         if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
             for(Place place : m_group.m_places){
                 if(place != null){
@@ -298,10 +309,36 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             }
         }
         if(m_group.m_meeting != null){
+            m_Map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                // Use default InfoWindow frame
+                @Override
+                public View getInfoWindow(Marker arg0) {
+                    return null;
+                }
+
+                // SOURCE: http://stackoverflow.com/questions/15090148/custom-info-window-adapter-with-custom-data-in-map-v2
+                // Defines the contents of the InfoWindow
+                @Override
+                public View getInfoContents(Marker arg0) {
+                    // Getting view from the layout file info_window_layout
+                    View v = getLayoutInflater().inflate(R.layout.custom_infowind, null);
+                    ((TextView) v.findViewById(R.id.tv_title)).setText(m_group.m_meeting.m_place.m_name);
+                    ((TextView) v.findViewById(R.id.tv_rating)).setText("Rating:" + m_group.m_meeting.m_place.m_finalRating);
+                    ((TextView) v.findViewById(R.id.tv_lat)).setText("Lat:" + m_group.m_meeting.m_place.m_loc.getLatitude());
+                    ((TextView) v.findViewById(R.id.tv_lng)).setText("Long:" + m_group.m_meeting.m_place.m_loc.getLongitude());
+                    ((TextView) v.findViewById(R.id.tv_date)).setText("Date:" + m_group.m_meeting.m_date);
+                    ((TextView) v.findViewById(R.id.tv_start)).setText("Start Time:" + m_group.m_meeting.m_startTime);
+                    ((TextView) v.findViewById(R.id.tv_end)).setText("End Time:" + m_group.m_meeting.m_endTime);
+                    ((TextView) v.findViewById(R.id.tv_info)).setText("Infos:" + m_group.m_meeting.m_info);
+                    return v;
+                }
+            });
             Place place = m_group.m_meeting.m_place;
-            MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating);
-            m_Map.addMarker(marker);
+            if(place != null){
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                        .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating + "\n");
+                m_Map.addMarker(marker);
+            }
         }
     }
 
@@ -348,6 +385,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void setUserLocation(final Location loc) {
+
 
         Group group =  this.m_group;
         User user = ourInstance.getUser();
@@ -435,22 +473,19 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     public void OnClickPlace(View view){
         m_Map.clear();
         Place place = null;
-        String moreInfo = "";
         switch (view.getId()){
             case R.id.btn_meeting1:
                 place = m_group.m_places.get(0);
-                m_group.m_meeting = new Meeting(place);
                 break;
             case R.id.btn_meeting2:
                 place = m_group.m_places.get(1);
-                m_group.m_meeting = new Meeting(place);
                 break;
             case R.id.btn_meeting3:
                 place = m_group.m_places.get(2);
-                m_group.m_meeting = new Meeting(place);
                 break;
         }
-        moreInfo = ((EditText)findViewById(R.id.et_meeting_info)).getText().toString();
+        m_group.m_meeting = new Meeting(place);
+        ourInstance.getGroup().m_meeting = m_group.m_meeting;
         LinearLayout child = (LinearLayout)findViewById(R.id.map_content_meeting);
         if(m_layoutRoot.getChildAt(0) == child){
             m_layoutRoot.removeViewAt(0);
@@ -459,11 +494,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         frag.setVisibility(View.VISIBLE);
         m_layoutRoot.invalidate();
         setMeeting(m_group.m_meeting);
-        if(place != null){
-            MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                    .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating + "\n" + moreInfo);
-            m_Map.addMarker(marker);
-        }
         // Start New intent for result calendar
         Intent intent = new Intent(MapActivity.this, CalendarActivity.class);
         startActivity(intent);
@@ -471,29 +501,33 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     private void UpdateButtonAfterVote(LinearLayout item) {
         m_btnVote.setText(R.string.create_event);
-        if(doubleCheckManager()){
-            m_btnVote.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(getApplicationContext(), "Creating Event", Toast.LENGTH_SHORT).show();
-                    View child = getLayoutInflater().inflate(R.layout.content_map_meeting, null);
-                    View frag = (View)findViewById(R.id.map);
-                    frag.setVisibility(View.INVISIBLE);
-                    LinearLayout item = (LinearLayout)findViewById(R.id.maps);
-                    item.addView(child, 0);
-                    updateMeetingTextField();
-                    m_btnVote.setVisibility(View.INVISIBLE);
-                }
-            });
-            m_btnVote.setVisibility(View.VISIBLE);
+        if(m_group.m_meeting == null){
+            if(doubleCheckManager() ){
+                m_btnVote.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(getApplicationContext(), "Creating Event", Toast.LENGTH_SHORT).show();
+                        View child = getLayoutInflater().inflate(R.layout.content_map_meeting, null);
+                        View frag = (View)findViewById(R.id.map);
+                        frag.setVisibility(View.INVISIBLE);
+                        LinearLayout item = (LinearLayout)findViewById(R.id.maps);
+                        item.addView(child, 0);
+                        updateMeetingTextField();
+                        m_btnVote.setVisibility(View.INVISIBLE);
+                    }
+                });
+                m_btnVote.setVisibility(View.VISIBLE);
+            } else {
+                m_btnVote.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(getApplicationContext(), R.string.wait_event, Toast.LENGTH_SHORT).show();
+                        m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
+                    }
+                });
+            }
         } else {
-            m_btnVote.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(getApplicationContext(), R.string.wait_event, Toast.LENGTH_SHORT).show();
-                    m_btnVote.getBackground().setAlpha(GRAY_ALPHA);
-                }
-            });
+            Toast.makeText(getApplicationContext(), R.string.event_exists, Toast.LENGTH_SHORT).show();
         }
     }
 
