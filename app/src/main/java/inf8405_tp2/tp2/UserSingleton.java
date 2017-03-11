@@ -201,6 +201,16 @@ public class UserSingleton {
         }
     }
 
+    public String quitGroup(){
+        if(m_group == null || m_group.m_name.isEmpty())
+            return "";
+        if(m_user.m_profile.m_name != null){
+            m_GroupRef.child(m_group.m_name).child(Group.PROPERTY_USERS)
+                    .child(String.valueOf(m_group.m_users.indexOf(m_user))).removeValue();
+        }
+         return m_group.m_name;
+    }
+
 
     public DatabaseReference getGroupref() {
         return this.m_GroupRef;
