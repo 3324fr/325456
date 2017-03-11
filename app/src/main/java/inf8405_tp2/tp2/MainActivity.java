@@ -126,8 +126,7 @@ public class MainActivity extends AppCompatActivity {
         m_userFragment = new UserFragment();
         fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
     }
-
-
+    
     public void OnClickGMap(View view) {
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
@@ -135,29 +134,6 @@ public class MainActivity extends AppCompatActivity {
             ourInstance.addUser2Group(groupName);
             Intent intent = new Intent(MainActivity.this, MapActivity.class);
             startActivity(intent);
-        }
-    }
-
-    //TODO DELETE before release
-    public void OnClickGMapCheat(View view){
-        EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
-        String groupName = editText_group.getText().toString();
-        if(!groupName.isEmpty()) {
-            ourInstance.addUser2Group(groupName);
-            //Intent intent = new Intent(MainActivity.this, MapActivity.class);
-            // create random location place
-            for (int i = 0 ; i < 3; ++i){
-                Place place = new Place();
-                place.m_name = "Random" + i;
-                place.m_finalRating = 0;
-                Location loc = new Location(place.m_name);
-                loc.setLatitude(40.0 + i*5);
-                loc.setLongitude(-5.0 - i*5);
-                place.m_loc = new SuperLocation(loc);
-                ourInstance.createPlace(place, ourInstance.getGroup().m_name);
-            }
-
-            //startActivity(intent);
         }
     }
 
