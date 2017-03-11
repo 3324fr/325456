@@ -55,12 +55,14 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void updateTextView() {
-        String date = ourInstance.getGroup().m_meeting.m_date == null ? "" : ourInstance.getGroup().m_meeting.m_date;
-        String start = ourInstance.getGroup().m_meeting.m_startTime == null ? "" : ourInstance.getGroup().m_meeting.m_startTime;
-        String end = ourInstance.getGroup().m_meeting.m_endTime == null ? "" : ourInstance.getGroup().m_meeting.m_endTime;
-        TextView tv = (TextView)findViewById(R.id.calendar_dateOutput);
-        String temp = "Date:" + date +"\n"+ "Start Time:" +  start +"\n"+ "End Time:" +  end;
-        tv.setText(temp);
+        if(ourInstance.getGroup().m_meeting != null){
+            String date = ourInstance.getGroup().m_meeting.m_date == null ? "" : ourInstance.getGroup().m_meeting.m_date;
+            String start = ourInstance.getGroup().m_meeting.m_startTime == null ? "" : ourInstance.getGroup().m_meeting.m_startTime;
+            String end = ourInstance.getGroup().m_meeting.m_endTime == null ? "" : ourInstance.getGroup().m_meeting.m_endTime;
+            TextView tv = (TextView)findViewById(R.id.calendar_dateOutput);
+            String temp = "Date:" + date +"\n"+ "Start Time:" +  start +"\n"+ "End Time:" +  end;
+            tv.setText(temp);
+        }
     }
 
     public void OnStartHourClicked(View view)

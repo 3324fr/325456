@@ -20,6 +20,7 @@
     <string name="rating1">Rating1</string>
     <string name="wait_event">Wait for the manager to choose a Event Meeting</string>
     <string name="start">Start</string>
+
     <string name="more_info_on_meeting">More Info on Meeting</string>
     <string name="dev_cheat">Dev cheat</string>
     <string name="meeting_setup">Meeting Setup</string>
@@ -28,6 +29,7 @@
     <string name="date">Date</string>
     <string name="confirm">Confirm</string>
     <string name="meeting">Meeting :</string>
+
     <string name="enter_your_group_name">Enter your group name</string>
     <string name="tp2">TP2</string>
     <string name="change_username">Change username</string>
@@ -37,4 +39,6 @@
     <string name="quit_group">Quit Group</string>
     <string name="quir">Quit group</string>
     <string name="ok">Ok</string>
+    <string name="event_exists">Event already exists</string>
+
 </resources>
