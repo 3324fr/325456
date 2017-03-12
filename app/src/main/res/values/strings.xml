@@ -52,5 +52,8 @@
     <string name="youvoted">You already voted!</string>
     <string name="calendar">Calendar</string>
     <string name="calendar_open">Calendar opened</string>
+    <string name="attention">Attention</string>
+    <string name="mark_calendar">Mark meeting event on calendar (in preference top right button)</string>
+    <string name="highlight_calendar">Highlight date on calendar?</string>
 
 </resources>

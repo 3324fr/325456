@@ -1,5 +1,7 @@
 package inf8405_tp2.tp2;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.preference.PreferenceFragment;
 import android.support.v4.app.NavUtils;
@@ -10,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
 
 import java.util.Calendar;
 
@@ -92,9 +96,23 @@ public class PreferencesActivity extends AppCompatActivity {
     }
 
     public void onClickQuitGroup(View view){
-        String groupname = UserSingleton.getInstance(getApplicationContext()).quitGroup();
-        Toast.makeText(this, getString(R.string.quir)+ " " + groupname, Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, MainActivity.class);
-        NavUtils.navigateUpTo(this,intent);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.attention)
+                .setMessage(R.string.quir)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String groupname = UserSingleton.getInstance(getApplicationContext()).quitGroup();
+                        Toast.makeText(getApplicationContext(), getString(R.string.quir)+ " " + groupname, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(PreferencesActivity.this, MainActivity.class);
+                        NavUtils.navigateUpTo(PreferencesActivity.this,intent);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
     }
 }

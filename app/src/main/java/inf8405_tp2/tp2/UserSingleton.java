@@ -37,6 +37,7 @@ public class UserSingleton {
 
     private  static User m_user;
     private  static Group m_group;
+    private AlertDialog m_alert;
 
     public static UserSingleton getInstance(Context context) {
 
@@ -197,8 +198,10 @@ public class UserSingleton {
             m_GroupRef.child(m_group.m_name).child(Group.PROPERTY_USERS)
                     .child(m_user.m_profile.m_name).removeValue();
         }
-         return m_group.m_name;
+        return m_group.m_name;
     }
+
+
 
 
     public DatabaseReference getGroupref() {
@@ -243,9 +246,12 @@ public class UserSingleton {
     }
 
     public void updateCalendarWithMeeting(Context context){
-        new AlertDialog.Builder(context)
-                .setTitle("Mark meeting event on calendar (in preference top right button)")
-                .setMessage("Highlight date on calendar?")
+        if(m_alert != null){
+            m_alert.dismiss();
+        }
+        m_alert = new AlertDialog.Builder(context)
+                .setTitle(R.string.mark_calendar)
+                .setMessage(R.string.highlight_calendar)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         User user = m_group.m_users.get(ourInstance.getUser());
@@ -270,7 +276,7 @@ public class UserSingleton {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
-
     }
+
 }
 
