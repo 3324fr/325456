@@ -4,6 +4,7 @@ package inf8405_tp2.tp2;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,6 +17,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -44,6 +47,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.fitness.data.Value;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -69,7 +73,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter {
+public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter,
+        GoogleApiClient.ConnectionCallbacks, LocationListener,
+        GoogleApiClient.OnConnectionFailedListener{
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
 
@@ -89,6 +95,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     private ScheduledExecutorService scheduler;
     private LinearLayout m_layoutRoot;
     private final int GRAY_ALPHA = 32;
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    private LocationRequest m_LocationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +114,16 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        m_GoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        // Create the LocationRequest object
+        m_LocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
     }
 
     @Override
@@ -184,35 +202,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
-
-        // Define a scheduler that responds to location update every mintime
-        this.scheduler =
-                Executors.newScheduledThreadPool(5);
-        this.scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        Log.d(TAG, "Location Update");
-                        final Criteria criteria = new Criteria();
-                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                        criteria.setAltitudeRequired(false);
-                        criteria.setBearingRequired(false);
-                        String provider = locationManager.getBestProvider(criteria, true);
-                        if (!provider.isEmpty() && ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                                == PackageManager.PERMISSION_GRANTED) {
-                            m_Map.setMyLocationEnabled(true);
-                            Location loc = locationManager.getLastKnownLocation(provider);
-                            setUserLocation(loc);
-                        }
-
-                    }
-                });
-            }
-        }, 0, Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")), TimeUnit.SECONDS);
         map();
+
     }
 
     @Override
@@ -436,7 +427,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                         startActivity(i);
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(), "You are not the manager.", Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(), R.string.not_manager, Toast.LENGTH_LONG);
                 }
             }
         });
@@ -444,7 +435,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     public void OnClickVote(View view){
         if(m_group.m_meeting != null){
-            Toast.makeText(getApplicationContext(), "Event exist. No more vote allowed", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.event_exists_2, Toast.LENGTH_LONG).show();
             return;
         }
         if(!ourInstance.getUser().getVote()){
@@ -458,7 +449,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     item.addView(child, 0);
                     updateButtonTextField();
                 } else {
-                    Toast.makeText(this, "Three locations to be marked", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.need_three_locs, Toast.LENGTH_SHORT).show();
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
@@ -592,7 +583,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_MEETING);
             groupRef.setValue(meeting);
-            Toast.makeText(getApplicationContext(), "Meeting created", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.new_meeting, Toast.LENGTH_SHORT).show();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -658,5 +649,69 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Location location = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+        if (location == null) {
+        }
+        else {
+            setUserLocation(location);
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        m_GoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (m_GoogleApiClient.isConnected()) {
+            m_GoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        setUserLocation(location);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 }
