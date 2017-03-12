@@ -119,7 +119,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     @Override
     protected  void onDestroy(){
         super.onDestroy();
-        if(this.m_group != null ) {
+        if(this.m_group != null && valEventList != null ) {
             ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
         }
     }

@@ -19,6 +19,8 @@ import java.util.Calendar;
 
 public class PreferencesActivity extends AppCompatActivity {
 
+    private Calendar m_calendar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +39,7 @@ public class PreferencesActivity extends AppCompatActivity {
     }
 
     private void updateCalendar() {
-        CalendarView calendarView = (CalendarView)findViewById(R.id.simpleCalendarView);
+
         int day = 0;
         int month = 0;
         int year = 0;
@@ -63,14 +65,21 @@ public class PreferencesActivity extends AppCompatActivity {
         catch (NullPointerException e){
             e.printStackTrace();
         }
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
+        m_calendar = Calendar.getInstance();
+        m_calendar.set(Calendar.YEAR, year);
         //Month: 0-11
-        calendar.set(Calendar.MONTH, month-1);
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-        calendar.set(Calendar.HOUR, hour);
-        calendar.set(Calendar.MINUTE, min);
-        calendarView.setDate(calendar.getTimeInMillis(), true, true);
+        m_calendar.set(Calendar.MONTH, month-1);
+        m_calendar.set(Calendar.DAY_OF_MONTH, day);
+        m_calendar.set(Calendar.HOUR, hour);
+        m_calendar.set(Calendar.MINUTE, min);
+        final CalendarView calendarView = (CalendarView)findViewById(R.id.simpleCalendarView);
+        calendarView.setDate(m_calendar.getTimeInMillis(), true, true);
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+                calendarView.setDate(m_calendar.getTimeInMillis(), true, true);
+            }
+        });
     }
 
     @Override
