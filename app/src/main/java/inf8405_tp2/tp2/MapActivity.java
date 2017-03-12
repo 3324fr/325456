@@ -6,7 +6,7 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
+import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -99,6 +99,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(5 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
     }
 
     @Override
@@ -219,6 +220,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
         else {
             // Show rationale and request permission.
+        }
+        if(m_group == null){
+            m_group = ourInstance.getGroup();
         }
     }
 
@@ -354,8 +358,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void setUserLocation(final Location loc) {
-
-
         Group group =  this.m_group;
         User user = ourInstance.getUser();
         if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.containsValue(user)) {
@@ -364,7 +366,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_USERS).child(user.m_profile.m_name).child(User.PROPERTY_LOCATION);
             groupRef.setValue(loc);
-
         }
     }
 
@@ -374,7 +375,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
     public void visit(Manager manager) {
         //// TODO: 2017-03-08
-
     }
 
     private void SetOnMapListener(){
@@ -564,6 +564,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
+    // Participation
     public void OnClickParticipate(View view){
         DatabaseReference groupRef = null;
         User user = ourInstance.getUser();
@@ -615,6 +616,10 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     //SOURCE http://developer.android.com/training/permissions/requesting.html
     @Override
     public void onConnected(Bundle bundle) {
+        startLocationUpdates();
+    }
+
+    protected void startLocationUpdates() {
 
     }
 
@@ -641,12 +646,13 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
                 return;
             }
-            Location location = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
+            LocationServices.FusedLocationApi.requestLocationUpdates(m_GoogleApiClient, m_LocationRequest, this);
+            /*Location location = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
             if (location == null) {
             }
             else {
                 setUserLocation(location);
-            }
+            }*/
         }
         catch (SecurityException e){
             e.printStackTrace();
@@ -719,20 +725,5 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location location) {
         setUserLocation(location);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 }

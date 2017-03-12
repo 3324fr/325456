@@ -26,6 +26,8 @@ public class User {
 
     public Profile m_profile;
 
+
+
     @PropertyName(PROPERTY_VOTE)
     public boolean m_vote;
 
