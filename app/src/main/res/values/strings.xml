@@ -47,5 +47,7 @@
     <string name="not_manager">You are not the manager.</string>
     <string name="need_three_locs">Three locations to be marked</string>
     <string name="new_meeting">Meeting created</string>
+    <string name="deniedPerm">permission denied, ...:(</string>
+    <string name="permGranted">permission was granted, :)</string>
 
 </resources>
