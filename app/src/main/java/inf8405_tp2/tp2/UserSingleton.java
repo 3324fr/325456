@@ -1,15 +1,12 @@
 package inf8405_tp2.tp2;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.CalendarView;
-
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -20,14 +17,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-
-import inf8405_tp2.tp2.user.Post;
 
 /**
  * Created by 422234 on 2017-03-05.
@@ -251,21 +242,35 @@ public class UserSingleton {
 
     }
 
-    public void updateCalendarWithMeeting(){
+    public void updateCalendarWithMeeting(Context context){
+        new AlertDialog.Builder(context)
+                .setTitle("Mark meeting event on calendar (in preference top right button)")
+                .setMessage("Highlight date on calendar?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        User user = m_group.m_users.get(ourInstance.getUser());
+                        if(user!= null){
+                            user.m_date = m_group.m_meeting.m_date;
+                            user.m_time = m_group.m_meeting.m_startTime;
+                        }
+                        ourInstance.getUser().m_date = m_group.m_meeting.m_date;
+                        ourInstance.getUser().m_time = m_group.m_meeting.m_startTime;
+                        DatabaseReference groupRef = ourInstance.getGroupref().child(m_group.m_name)
+                                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERDATE);
+                        groupRef.setValue(ourInstance.getUser().m_date);
+                        groupRef = ourInstance.getGroupref().child(m_group.m_name)
+                                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERTIME);
+                        groupRef.setValue(ourInstance.getUser().m_time);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        return;
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
 
-        User user = m_group.m_users.get(ourInstance.getUser());
-        if(user!= null){
-            user.m_date = m_group.m_meeting.m_date;
-            user.m_time = m_group.m_meeting.m_startTime;
-        }
-        ourInstance.getUser().m_date = m_group.m_meeting.m_date;
-        ourInstance.getUser().m_time = m_group.m_meeting.m_startTime;
-        DatabaseReference groupRef = ourInstance.getGroupref().child(m_group.m_name)
-                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERDATE);
-        groupRef.setValue(ourInstance.getUser().m_date);
-        groupRef = ourInstance.getGroupref().child(m_group.m_name)
-                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERTIME);
-        groupRef.setValue(ourInstance.getUser().m_time);
     }
 }
 

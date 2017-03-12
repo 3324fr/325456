@@ -553,13 +553,13 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 update |= addUserToList(m_group.m_meeting.m_participants, user);
                 update |= removeUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
-                ourInstance.updateCalendarWithMeeting();
+                ourInstance.updateCalendarWithMeeting(this);
                 break;
             case R.id.btn_maybe:
                 update |= addUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
                 update |= removeUserToList(m_group.m_meeting.m_participants, user);
-                ourInstance.updateCalendarWithMeeting();
+                ourInstance.updateCalendarWithMeeting(this);
                 break;
             case R.id.btn_decline:
                 update |= addUserToList(m_group.m_meeting.m_decline, user);
