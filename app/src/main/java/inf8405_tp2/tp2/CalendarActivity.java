@@ -139,6 +139,10 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     public void onClickConfirm(View view){
+        if(ourInstance.getGroup().m_meeting.m_date == null || ourInstance.getGroup().m_meeting.m_startTime == null){
+            Toast.makeText(this,"You need to set date and start time at least", Toast.LENGTH_LONG).show();
+            return;
+        }
         Group group = ourInstance.getGroup();
         DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                 .child(Group.PROPERTY_MEETING);

@@ -390,7 +390,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     item.addView(child, 0);
                     updateButtonTextField();
                 } else {
-                    Toast.makeText(this, R.string.need_three_locs, Toast.LENGTH_SHORT).show();
+                    String pop = this.getString(R.string.need_three_locs) +""+ m_group.m_places.size() + " marked.";
+                    Toast.makeText(this, pop, Toast.LENGTH_SHORT).show();
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
