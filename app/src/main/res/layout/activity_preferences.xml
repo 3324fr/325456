@@ -16,12 +16,22 @@
         android:layout_height="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/my_toolbar"
-        android:layout_above="@+id/button2" />
+        android:layout_above="@+id/simpleCalendarView" />
+
+    <CalendarView
+        android:id="@+id/simpleCalendarView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button2"
+        android:firstDayOfWeek="2"
+        android:maxDate="01/01/2018"
+        android:minDate="01/03/2017" />
 
     <Button
         android:text="@string/quit_group"
@@ -29,8 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="44dp"
         android:id="@+id/button2"
-        android:onClick="quitGroup" />
+        android:onClick="onClickQuitGroup" />
 
 </RelativeLayout>

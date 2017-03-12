@@ -3,13 +3,11 @@ package inf8405_tp2.tp2;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,7 +30,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -45,32 +42,26 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter,
         GoogleApiClient.ConnectionCallbacks, LocationListener,
         GoogleApiClient.OnConnectionFailedListener{
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
+    private final int GRAY_ALPHA = 32;
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private static GoogleMap m_Map;
     private static GoogleApiClient m_GoogleApiClient;
-    private static UiSettings mapSettings;
     private final static int MY_LOCATION_REQUEST_CODE = 1;
     private static final String TAG = "LocationActivity";
-    private static final String TAG_ADD_PLACE = "inf8405_tp2.tp2.addPlaceFragment";
 
     private static Group m_group;
     private static UserSingleton ourInstance;
-    private static SharedPreferences sharedPref;
     private ValueEventListener valEventList;
     private Button m_btnVote;
-    private LocationManager locationManager;
-    private ScheduledExecutorService scheduler;
+    private LocationManager m_locationManager;
     private LinearLayout m_layoutRoot;
-    private final int GRAY_ALPHA = 32;
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private LocationRequest m_LocationRequest;
 
     @Override
@@ -78,17 +69,15 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
         // Acquire a reference to the system Location Manager
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        m_locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         m_GoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -101,12 +90,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-
-    }//onActivityResult
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -126,12 +109,10 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             case R.id.action_agenda:
                 // User chose the "agenda" item, show the app settings UI...
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
@@ -140,7 +121,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         super.onDestroy();
         if(this.m_group != null ) {
             ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
-            // Remove the listener you previously added
         }
     }
     // Use default InfoWindow frame
@@ -165,8 +145,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         // Request permission.
         ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                 MY_LOCATION_REQUEST_CODE);
-        map();
-
+        setDataBaseMap();
     }
 
     @Override
@@ -175,7 +154,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 Toast.LENGTH_SHORT).show();
     }
 
-    public void map(){
+    public void setDataBaseMap(){
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
@@ -435,7 +414,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 ourInstance.getUser().setVote(true);
             }
         } else {
-            Toast.makeText(this, "You already voted!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.youvoted, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -574,12 +553,13 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 update |= addUserToList(m_group.m_meeting.m_participants, user);
                 update |= removeUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
-
+                ourInstance.updateCalendarWithMeeting();
                 break;
             case R.id.btn_maybe:
                 update |= addUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
                 update |= removeUserToList(m_group.m_meeting.m_participants, user);
+                ourInstance.updateCalendarWithMeeting();
                 break;
             case R.id.btn_decline:
                 update |= addUserToList(m_group.m_meeting.m_decline, user);
@@ -595,8 +575,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             groupRef = ourInstance.getGroupref().child(m_group.m_name).child(Group.PROPERTY_MEETING).child(Meeting.PROPERTY_DECLINE);
             groupRef.setValue(m_group.m_meeting.m_decline);
         }
-
     }
+
 
     public boolean addUserToList(List<User> list, User user){
         if(!list.contains(user)){
@@ -616,15 +596,11 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     //SOURCE http://developer.android.com/training/permissions/requesting.html
     @Override
     public void onConnected(Bundle bundle) {
-        startLocationUpdates();
+        getAndSetUserLocationWithPermission();
     }
 
-    protected void startLocationUpdates() {
-
-    }
-
+    //SOURCE http://developer.android.com/training/permissions/requesting.html
     private void getAndSetUserLocationWithPermission(){
-
         try{
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED
@@ -637,8 +613,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
-
-
                 //------------------------------------------------------------------------------
                 ActivityCompat.requestPermissions(MapActivity.this,
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -646,13 +620,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
                 return;
             }
-            LocationServices.FusedLocationApi.requestLocationUpdates(m_GoogleApiClient, m_LocationRequest, this);
-            /*Location location = LocationServices.FusedLocationApi.getLastLocation(m_GoogleApiClient);
-            if (location == null) {
+            if(m_GoogleApiClient.isConnected()){
+                LocationServices.FusedLocationApi.requestLocationUpdates(m_GoogleApiClient, m_LocationRequest, this);
             }
-            else {
-                setUserLocation(location);
-            }*/
         }
         catch (SecurityException e){
             e.printStackTrace();
@@ -660,7 +630,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     //SOURCE: http://android-er.blogspot.ca/2016/04/requesting-permissions-of.html
-
     @Override
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -701,7 +670,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
         }
     }
-
 
     @Override
     public void onConnectionSuspended(int i) {

@@ -49,5 +49,8 @@
     <string name="new_meeting">Meeting created</string>
     <string name="deniedPerm">permission denied, ...:(</string>
     <string name="permGranted">permission was granted, :)</string>
+    <string name="youvoted">You already voted!</string>
+    <string name="calendar">Calendar</string>
+    <string name="calendar_open">Calendar opened</string>
 
 </resources>
