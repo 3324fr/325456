@@ -27,6 +27,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -142,10 +144,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         // Setting a custom info window adapter for the google map
         m_Map.setInfoWindowAdapter(this);
         //m_Map.setOnInfoWindowClickListener(this);
-        // Request permission.
-        ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                MY_LOCATION_REQUEST_CODE);
         setDataBaseMap();
+        moveCameraInit();
     }
 
     @Override
@@ -623,6 +623,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             }
             if(m_GoogleApiClient.isConnected()){
                 LocationServices.FusedLocationApi.requestLocationUpdates(m_GoogleApiClient, m_LocationRequest, this);
+                setDataBaseMap();
             }
         }
         catch (SecurityException e){
@@ -680,7 +681,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume Fired =======");
         m_GoogleApiClient.connect();
+        moveCameraInit();
     }
 
     @Override
@@ -694,5 +697,18 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location location) {
         setUserLocation(location);
+    }
+
+    private void moveCameraInit(){
+        if(m_group!= null && m_group.m_users.size()>0)
+        {
+            SuperLocation loc = m_group.m_users.get(ourInstance.getUser().m_profile.m_name).getCurrentLocation();
+            if(loc != null && m_Map != null){
+                CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude()));
+                //CameraUpdate zoom = CameraUpdateFactory.zoomTo(12);
+                m_Map.moveCamera(center);
+                //m_Map.animateCamera(zoom);
+            }
+        }
     }
 }
