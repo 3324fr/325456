@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnClickConfirm(String username) {
 
-        if(!username.isEmpty()) {
+        if(!username.isEmpty() && !username.matches("^-?\\d+$")) {
             UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
             Toast.makeText(this, getString(R.string.hello)+ " " + username, Toast.LENGTH_SHORT).show();
             Profile profile = userS.login(username);
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
     public void OnClickGMap(View view) {
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
-        if(!groupName.isEmpty()) {
+        if(!groupName.isEmpty() && !groupName.matches("^-?\\d+$")) {
             ourInstance.addUser2Group(groupName);
             Intent intent = new Intent(MainActivity.this, MapActivity.class);
             startActivity(intent);

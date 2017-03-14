@@ -207,6 +207,10 @@ public class UserSingleton {
     public DatabaseReference getGroupref() {
         return this.m_GroupRef;
     }
+
+    public StorageReference getPlaceImageStorage() {
+        return this.m_PlacePictureRef;
+    }
     public Group getGroup() {
         return this.m_group;
     }

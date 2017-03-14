@@ -4,6 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
@@ -36,10 +41,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -218,15 +226,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void CreateMarker(final Group m_group){
-        if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
-            for(Place place : m_group.m_places){
-                if(place != null){
-                    MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                            .title(place.m_name).snippet("Rating : " + place.m_finalRating);
-                    m_Map.addMarker(marker);
-                }
-            }
-        }
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+
         for(User u : m_group.getUsers()){
             Location loc = u.getCurrentLocation();
             Profile p = u.m_profile;
@@ -290,6 +292,56 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
                         .title("Meeting at " + place.m_name).snippet("Rating : " + place.m_finalRating + "\n");
                 m_Map.addMarker(marker);
+            }
+        }
+
+        if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
+            for(final Place place : ourInstance.getGroup().m_places){
+                if(place != null){
+
+                    if(place.image == null){
+                        StorageReference imageReference = ourInstance.getPlaceImageStorage().child(place.m_name);
+                        try{
+                            imageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    int pos = ourInstance.getGroup().m_places.indexOf(place);
+                                    ourInstance.getGroup().m_places.get(pos).image = bytes;
+                                }
+                            });
+                            imageReference.getBytes(ONE_MEGABYTE).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "inCreateMarker Failed to get picture =============");
+                                }
+                            });
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                    if(place.image != null){
+                        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+                        Bitmap bmp = Bitmap.createBitmap(80, 80, conf);
+                        Canvas canvas1 = new Canvas(bmp);
+                        Bitmap temp = BitmapFactory.decodeByteArray(place.image, 0, place.image.length);
+
+                        Paint color = new Paint();
+                        color.setTextSize(35);
+                        color.setColor(Color.BLACK);
+
+                        canvas1.drawBitmap(temp, 0,0, color);
+                        canvas1.drawText("User Name!", 30, 40, color);
+                        m_Map.addMarker(new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                                .icon(BitmapDescriptorFactory.fromBitmap(bmp)).title(place.m_name).snippet("Rating : " + place.m_finalRating)
+                                // Specifies the anchor to be at a particular point in the marker image.
+                                .anchor(0.5f, 1));
+                    } else {
+                        MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                                .title(place.m_name).snippet("Rating : " + place.m_finalRating);
+                        m_Map.addMarker(marker);
+                    }
+                }
             }
         }
     }

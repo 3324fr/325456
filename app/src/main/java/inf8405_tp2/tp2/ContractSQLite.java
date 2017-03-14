@@ -22,6 +22,12 @@ public final class ContractSQLite {
         public static final String COLUMN_NAME_PICTURE = "photo";
     }
 
+    public static class PlaceEntry implements BaseColumns {
+        public static final String TABLE_NAME = "profile";
+        public static final String COLUMN_NAME_TITLE = "name";
+        public static final String COLUMN_NAME_PICTURE = "photo";
+    }
+
 
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + ProfileEntry.TABLE_NAME + " (" +

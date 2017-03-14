@@ -1,8 +1,14 @@
 package inf8405_tp2.tp2;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +23,8 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class PlaceActivity extends AppCompatActivity {
@@ -24,6 +32,8 @@ public class PlaceActivity extends AppCompatActivity {
     final static int PICK_IMAGE = 7;
     private LatLng m_latLng;
     private String m_groupName;
+    private String mTmpGalleryPicturePath;
+    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,17 +86,23 @@ public class PlaceActivity extends AppCompatActivity {
 
             Place place= new Place();
 
-            Bundle extras = data.getExtras();
-            if(extras!= null){
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Uri selectedImage = data.getData();
+            if(selectedImage!= null){
+                try{
+                    Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                    // todo test save place
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    Bitmap converetdImage = getResizedBitmap(imageBitmap, 500);
+                    converetdImage.compress(Bitmap.CompressFormat.PNG, 0, stream);
+                    place.image = stream.toByteArray();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+                //ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
+                //mImageView.setImageBitmap(  imageBitmap);
 
-                ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
-                mImageView.setImageBitmap(  imageBitmap);
 
-                // todo test save place
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-                place.image = stream.toByteArray();
             }
             place.m_name = ((EditText)findViewById(R.id.editText_place_name)).getText().toString();
 
@@ -100,4 +116,19 @@ public class PlaceActivity extends AppCompatActivity {
             startActivity(i);
         }
     }//onActivityResult
+
+    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float)width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(image, width, height, true);
+    }
 }
