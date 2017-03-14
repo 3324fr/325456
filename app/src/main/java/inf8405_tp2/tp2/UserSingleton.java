@@ -215,6 +215,10 @@ public class UserSingleton {
         return this.m_group;
     }
 
+    public void setGroup(Group grp) {
+        this.m_group = grp;
+    }
+
     public void createPlace(final Place place, String groupName) {
 
         String placeName = place.m_name;

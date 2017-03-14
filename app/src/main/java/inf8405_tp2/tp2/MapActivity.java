@@ -185,6 +185,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                                     final Group group = dataSnapshot.getValue(Group.class);
                                     if(group != null){
                                         m_group = group;
+                                        ourInstance.setGroup(group);
                                         // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                         m_Map.clear();
                                         // create markers for users, places and event
@@ -558,6 +559,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         Integer[]rbs = {R.id.ratingBar1, R.id.ratingBar2, R.id.ratingBar3};
         for(int i = 0; i < rbs.length; ++i){
             rb = (RatingBar)findViewById(rbs[i]);
+            Group group = ourInstance.getGroup();
             m_group.m_places.get(i).m_rating.add(Math.floor(rb.getRating()));
         }
         updateAllRating();
