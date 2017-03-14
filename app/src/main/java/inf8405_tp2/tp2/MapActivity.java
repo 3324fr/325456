@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
@@ -60,6 +61,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
     private final int GRAY_ALPHA = 32;
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    final long ONE_MEGABYTE = 512 * 1024;
 
     private static GoogleMap m_Map;
     private static GoogleApiClient m_GoogleApiClient;
@@ -73,6 +75,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     private LocationManager m_locationManager;
     private LinearLayout m_layoutRoot;
     private LocationRequest m_LocationRequest;
+    private boolean downloadedImage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,8 +154,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         m_Map = googleMap;
         // Setting a custom info window adapter for the google map
         m_Map.setInfoWindowAdapter(this);
-        //m_Map.setOnInfoWindowClickListener(this);
+        // set up additionnal info for google api, firebase and gmap
         setDataBaseMap();
+        // attempt to move camera to user if ready
         moveCameraInit();
     }
 
@@ -166,9 +170,12 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
+            // setup listener for gmap
             SetOnMapListener();
             try {
+                // attempt to update some field parameters such as group
                 updateMemberGroup();
+                //save valevent for onDestroy and set valueEventListener for firebase
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
                             @Override
@@ -180,12 +187,44 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                                         m_group = group;
                                         // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                         m_Map.clear();
+                                        // create markers for users, places and event
                                         CreateMarker(m_group);
+                                        // update principal button for event options when needed
                                         ParticipateEvent();
                                         User user = ourInstance.getUser();
+                                        // update user vote status to avoid cheater
                                         user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
                                         if(m_group.m_places.size() == 3){
+                                            // make button appearance
                                             m_btnVote.getBackground().setAlpha(255);
+                                            // when 3 places are placed, update their pictures once
+                                            if(!downloadedImage){
+                                                for(final Place place : ourInstance.getGroup().m_places){
+                                                    if(place.image == null){
+                                                        Log.d(TAG, "Downloading img from storage");
+                                                        StorageReference imageReference = ourInstance.getPlaceImageStorage().child(place.m_name);
+                                                        try{
+                                                            imageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                @Override
+                                                                public void onSuccess(byte[] bytes) {
+                                                                    int pos = ourInstance.getGroup().m_places.indexOf(place);
+                                                                    ourInstance.getGroup().m_places.get(pos).image = bytes;
+                                                                }
+                                                            });
+                                                            imageReference.getBytes(ONE_MEGABYTE).addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+                                                                    Log.d(TAG, "inCreateMarker Failed to get picture =============");
+                                                                }
+                                                            });
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                                downloadedImage = true;
+                                            }
                                         }
                                     }
                                 }
@@ -226,13 +265,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void CreateMarker(final Group m_group){
-
-        final long ONE_MEGABYTE = 1024 * 1024;
-
         for(User u : m_group.getUsers()){
             Location loc = u.getCurrentLocation();
             Profile p = u.m_profile;
-
             if(p != null && loc != null){
                 // get the local profile whose contain a picture
                 Profile localProfile = ourInstance.getUserProfile(p.m_name);
@@ -255,12 +290,11 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 public View getInfoWindow(Marker arg0) {
                     return null;
                 }
-
                 // SOURCE: http://stackoverflow.com/questions/15090148/custom-info-window-adapter-with-custom-data-in-map-v2
                 // Defines the contents of the InfoWindow
+                // prepare the special snipet marker for the chosen event place
                 @Override
                 public View getInfoContents(Marker arg0) {
-
                     // Getting view from the layout file info_window_layout
                     View v = getLayoutInflater().inflate(R.layout.custom_infowind, null);
                     ((TextView) v.findViewById(R.id.tv_title)).setText(m_group.m_meeting.m_place.m_name);
@@ -280,13 +314,14 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 private String getStringFromArray(List<User> list) {
                     StringBuilder sb = new StringBuilder();
                     for (User user : list)
-                        {
+                    {
                         sb.append(user.m_profile.m_name);
                         sb.append("\t");
                     }
                     return sb.toString();
                 }
             });
+            // create marker for the chosen event place
             Place place = m_group.m_meeting.m_place;
             if(place != null){
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
@@ -294,48 +329,18 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 m_Map.addMarker(marker);
             }
         }
-
+        // update img and rating for our 2 different group pointers
+        updateMPlace();
+        // create marker for places (not event)
         if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
-            for(final Place place : ourInstance.getGroup().m_places){
+            for(final Place place : m_group.m_places){
                 if(place != null){
-
-                    if(place.image == null){
-                        StorageReference imageReference = ourInstance.getPlaceImageStorage().child(place.m_name);
-                        try{
-                            imageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                                @Override
-                                public void onSuccess(byte[] bytes) {
-                                    int pos = ourInstance.getGroup().m_places.indexOf(place);
-                                    ourInstance.getGroup().m_places.get(pos).image = bytes;
-                                }
-                            });
-                            imageReference.getBytes(ONE_MEGABYTE).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.d(TAG, "inCreateMarker Failed to get picture =============");
-                                }
-                            });
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
                     if(place.image != null){
-                        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-                        Bitmap bmp = Bitmap.createBitmap(80, 80, conf);
-                        Canvas canvas1 = new Canvas(bmp);
                         Bitmap temp = BitmapFactory.decodeByteArray(place.image, 0, place.image.length);
-
-                        Paint color = new Paint();
-                        color.setTextSize(35);
-                        color.setColor(Color.BLACK);
-
-                        canvas1.drawBitmap(temp, 0,0, color);
-                        canvas1.drawText("User Name!", 30, 40, color);
                         m_Map.addMarker(new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                                .icon(BitmapDescriptorFactory.fromBitmap(bmp)).title(place.m_name).snippet("Rating : " + place.m_finalRating)
+                                .icon(BitmapDescriptorFactory.fromBitmap(temp)).title(place.m_name).snippet("Rating : " + place.m_finalRating)
                                 // Specifies the anchor to be at a particular point in the marker image.
-                                .anchor(0.5f, 1));
+                                .anchor(0.1f, 1));
                     } else {
                         MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
                                 .title(place.m_name).snippet("Rating : " + place.m_finalRating);
@@ -346,6 +351,24 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
+    private void updateMPlace() {
+        for(Place place : ourInstance.getGroup().m_places){
+            String name = place.m_name;
+            for(Place place2 : m_group.m_places){
+                if(place2.m_name.equals(name) || place2.m_name == name){
+                    int pos = m_group.m_places.indexOf(place2);
+                    if(pos >= 0){
+                        m_group.m_places.get(pos).image = place.image;
+                        m_group.m_places.get(pos).m_finalRating = place.m_finalRating;
+                    } else {
+                        Log.d("Fail", " -_- ------------------------------------- -_- ");
+                    }
+                }
+            }
+        }
+    }
+
+    // update text field when rating Places
     private void updateButtonTextField() {
         Button btn1 = (Button)findViewById(R.id.btn_place1);
         Button btn2 = (Button)findViewById(R.id.btn_place2);
@@ -358,6 +381,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         ll.invalidate();
     }
 
+    // Update text field when choosing event place
     private void updateMeetingTextField() {
         Button btn1 = (Button)findViewById(R.id.btn_meeting1);
         Button btn2 = (Button)findViewById(R.id.btn_meeting2);
@@ -375,17 +399,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
         LinearLayout ll = (LinearLayout)findViewById(R.id.maps);
         ll.invalidate();
-    }
-
-    private SuperLocation GetLocationFromUser(String username){
-        List<User> users = new ArrayList<>(m_group.getUsers());
-        for(User user : users){
-            if(user.m_profile.m_name.equals(username)){
-                return user.getCurrentLocation();
-            }
-        }
-        Log.d(TAG, "User and profile not found ===========");
-        return null;
     }
 
     public void setUserLocation(final Location loc) {
@@ -426,11 +439,18 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         });
     }
 
+    // OnClickVote for the same button
     public void OnClickVote(View view){
+        /////////////////////////
+        // case when event exists
+        /////////////////////////
         if(m_group.m_meeting != null){
             Toast.makeText(getApplicationContext(), R.string.event_exists_2, Toast.LENGTH_LONG).show();
             return;
         }
+        /////////////////////////
+        // case when 3 places are placed, and its time to vote
+        /////////////////////////
         if(!ourInstance.getUser().getVote()){
             View child = getLayoutInflater().inflate(R.layout.content_map, null);
             if(view.getId() == R.id.btn_vote_start){
@@ -589,7 +609,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     private void ParticipateEvent() {
-        if(m_group.m_meeting != null){
+        if(m_group.m_meeting != null && m_layoutRoot.indexOfChild(m_btnVote) != -1){
             View child = getLayoutInflater().inflate(R.layout.content_map_participation, null);
             m_layoutRoot.removeView(m_btnVote);
             m_layoutRoot.addView(child);
@@ -597,6 +617,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     // Participation
+    // Here we add or remove according to the user decision
     public void OnClickParticipate(View view){
         DatabaseReference groupRef = null;
         User user = ourInstance.getUser();
@@ -629,7 +650,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             groupRef.setValue(m_group.m_meeting.m_decline);
         }
     }
-
 
     public boolean addUserToList(List<User> list, User user){
         if(!list.contains(user)){
@@ -705,7 +725,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 }
                 return;
             }
-
             // other 'case' lines to check for other
             // permissions this app might request
         }

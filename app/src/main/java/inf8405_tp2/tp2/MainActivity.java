@@ -93,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void picture() {
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap(  m_profile.m_picture);
+        if(m_profile.m_picture != null){
+            mImageView.setImageBitmap(  m_profile.m_picture);
+        }
     }
 
     public void OnClickConfirm(String username) {

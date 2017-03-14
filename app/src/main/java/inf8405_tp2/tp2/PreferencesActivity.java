@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PreferencesActivity extends AppCompatActivity {
 
@@ -50,6 +52,13 @@ public class PreferencesActivity extends AppCompatActivity {
             if(user instanceof Manager){
                 Group group = UserSingleton.getInstance(getApplicationContext()).getGroup();
                 user = group.m_users.get(user.m_profile.m_name);
+                for (Map.Entry<String, User> temp: group.m_users.entrySet())
+                {
+                    if(temp.getKey() == user.m_profile.m_name || user.m_profile.m_name.equals(temp.getKey())){
+                        user = temp.getValue();
+                        break;
+                    }
+                }
             }
             String parts1[] = user.m_date.split("-");
             year = Integer.parseInt(parts1[0]);
