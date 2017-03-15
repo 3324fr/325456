@@ -3,9 +3,9 @@
 
 
     <item
-    android:id="@+id/action_agenda"
-    android:title="@string/agenda"
-    android:icon="@android:drawable/ic_menu_agenda"
+    android:id="@+id/action_battery"
+    android:title="@string/battery_low"
+    android:icon="@android:drawable/ic_lock_idle_low_battery"
     app:showAsAction="always"/>
 
     <!-- "Mark Favorite", should appear as action button if possible -->

@@ -128,8 +128,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 Intent intent = new Intent(this, PreferencesActivity.class);
                 startActivity(intent);
                 return true;
-            case R.id.action_agenda:
-                // User chose the "agenda" item, show the app settings UI...
+            case R.id.action_battery:
+                Intent intentBattery = new Intent(this, BatteryActivity.class);
+                startActivity(intentBattery);
                 return true;
 
             default:
@@ -186,7 +187,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
         // Define a scheduler that responds to location update every mintime
         this.scheduler =
-                Executors.newScheduledThreadPool(5);
+                Executors.newScheduledThreadPool(1);
         this.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -210,7 +211,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     }
                 });
             }
-        }, 0, Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "3")), TimeUnit.SECONDS);
+        }, 0, Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "5")), TimeUnit.SECONDS);
         map();
     }
 

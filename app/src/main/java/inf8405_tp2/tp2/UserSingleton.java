@@ -22,7 +22,6 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import inf8405_tp2.tp2.user.Post;
 
 /**
  * Created by 422234 on 2017-03-05.
@@ -226,9 +225,9 @@ public class UserSingleton {
                     // todo try catch
                     Group group = dataSnapshot.getValue(Group.class);
 
-                    if (group != null) {
+                    if (group != null && group.m_places.size() < 3) {
                         group.m_places.add(place);
-                        groupRef.setValue(group);
+                        groupRef.child(Group.PROPERTY_PLACES).child(String.valueOf(group.m_places.size())).setValue(place);
                         // Save image
                         if(place.image != null){
                             m_PlacePictureRef.child(place.m_name).putBytes(place.image);

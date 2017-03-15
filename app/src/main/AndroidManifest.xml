@@ -17,7 +17,6 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -27,9 +26,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDTuViIbCRdyX83F2Gy4XgI4-2gM3hYk2w" />
-
-        <activity android:name=".MainActivity"
-            android:screenOrientation="portrait" >
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -40,7 +39,7 @@
         <activity
             android:name=".CalendarActivity"
             android:parentActivityName=".MapActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -49,22 +48,36 @@
         <activity
             android:name=".PreferencesActivity"
             android:parentActivityName=".MapActivity"
-            android:screenOrientation="portrait" >
-
+            android:screenOrientation="portrait">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MapActivity" />
         </activity>
-        <activity android:name=".PlaceActivity"
+        <activity
+            android:name=".PlaceActivity"
             android:parentActivityName=".MapActivity"
-            android:screenOrientation="portrait" >
-
+            android:screenOrientation="portrait">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MapActivity" />
         </activity>
+
+        <activity
+            android:name=".BatteryActivity"
+            android:parentActivityName=".MapActivity">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".MapActivity" />
+        </activity>
+
+        <receiver android:name=".BatteryReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_LOW" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

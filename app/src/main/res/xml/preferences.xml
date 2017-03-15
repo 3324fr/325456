@@ -6,5 +6,5 @@
         android:title="Location Interval"
         android:summary="Number of seconds between updates the user's location."
         android:numeric="integer"
-        android:defaultValue="3"/>
+        android:defaultValue="5"/>
 </PreferenceScreen>

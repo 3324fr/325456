@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickUsername(View view) {
-        m_userFragment = new UserFragment();
+       m_userFragment = new UserFragment();
         fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
     }
 

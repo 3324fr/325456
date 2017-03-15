@@ -43,5 +43,9 @@
     <string name="participate">Participate</string>
     <string name="maybe">Maybe</string>
     <string name="decline">Decline</string>
+    <string name="passer_en_mode_conomie_d_nergie">Passer en mode économie d\'énergie</string>
+    <string name="low_battery_icon">Low Battery Icon</string>
+    <string name="battery_low">Battery Low</string>
+    <string name="percent">%</string>
 
 </resources>

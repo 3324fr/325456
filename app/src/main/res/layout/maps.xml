@@ -12,7 +12,9 @@
     android:background="#ffffa6c7"
     android:weightSum="10"
     android:orientation="vertical"
-    tools:padding="@dimen/activity_horizontal_margin">
+    tools:padding="@dimen/activity_horizontal_margin"
+    tools:paddingBottom="0dp"
+    tools:paddingTop="0dp">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/my_toolbar"
@@ -38,7 +40,7 @@
     <Button
         android:text="@string/start_vote"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:id="@+id/btn_vote_start"
         android:onClick="OnClickVote"
         android:layout_weight="3"/>
