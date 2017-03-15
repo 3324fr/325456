@@ -1,6 +1,8 @@
 package inf8405_tp2.tp2;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +42,7 @@ public class UserSingleton {
 
     private  static User m_user;
     private  static Group m_group;
+    private AlertDialog m_alert;
 
     public static UserSingleton getInstance(Context context) {
 
@@ -200,15 +203,25 @@ public class UserSingleton {
             m_GroupRef.child(m_group.m_name).child(Group.PROPERTY_USERS)
                     .child(m_user.m_profile.m_name).removeValue();
         }
-         return m_group.m_name;
+        return m_group.m_name;
     }
+
+
 
 
     public DatabaseReference getGroupref() {
         return this.m_GroupRef;
     }
+
+    public StorageReference getPlaceImageStorage() {
+        return this.m_PlacePictureRef;
+    }
     public Group getGroup() {
         return this.m_group;
+    }
+
+    public void setGroup(Group grp) {
+        this.m_group = grp;
     }
 
     public void createPlace(final Place place, String groupName) {
@@ -225,9 +238,9 @@ public class UserSingleton {
                     // todo try catch
                     Group group = dataSnapshot.getValue(Group.class);
 
-                    if (group != null && group.m_places.size() < 3) {
+                    if (group != null) {
                         group.m_places.add(place);
-                        groupRef.child(Group.PROPERTY_PLACES).child(String.valueOf(group.m_places.size())).setValue(place);
+                        groupRef.setValue(group);
                         // Save image
                         if(place.image != null){
                             m_PlacePictureRef.child(place.m_name).putBytes(place.image);
@@ -244,5 +257,39 @@ public class UserSingleton {
         }
 
     }
+
+    public void updateCalendarWithMeeting(Context context){
+        if(m_alert != null){
+            m_alert.dismiss();
+        }
+        m_alert = new AlertDialog.Builder(context)
+                .setTitle(R.string.mark_calendar)
+                .setMessage(R.string.highlight_calendar)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        User user = m_group.m_users.get(ourInstance.getUser());
+                        if(user!= null){
+                            user.m_date = m_group.m_meeting.m_date;
+                            user.m_time = m_group.m_meeting.m_startTime;
+                        }
+                        ourInstance.getUser().m_date = m_group.m_meeting.m_date;
+                        ourInstance.getUser().m_time = m_group.m_meeting.m_startTime;
+                        DatabaseReference groupRef = ourInstance.getGroupref().child(m_group.m_name)
+                                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERDATE);
+                        groupRef.setValue(ourInstance.getUser().m_date);
+                        groupRef = ourInstance.getGroupref().child(m_group.m_name)
+                                .child(Group.PROPERTY_USERS).child(ourInstance.getUser().m_profile.m_name).child(User.PROPERTY_USERTIME);
+                        groupRef.setValue(ourInstance.getUser().m_time);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        return;
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
 }
 

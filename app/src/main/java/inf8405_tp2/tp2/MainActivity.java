@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         m_profile = userS.getUserProfile();
-        Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
         picture();
     }
     @Override
@@ -93,12 +93,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void picture() {
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
-        mImageView.setImageBitmap(  m_profile.m_picture);
+        if(m_profile.m_picture != null){
+            mImageView.setImageBitmap(  m_profile.m_picture);
+        }
     }
 
     public void OnClickConfirm(String username) {
 
-        if(!username.isEmpty()) {
+        if(!username.isEmpty() && !username.matches("^-?\\d+$")) {
             UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
             Toast.makeText(this, getString(R.string.hello)+ " " + username, Toast.LENGTH_SHORT).show();
             Profile profile = userS.login(username);
@@ -130,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     public void OnClickGMap(View view) {
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
-        if(!groupName.isEmpty()) {
+        if(!groupName.isEmpty() && !groupName.matches("^-?\\d+$")) {
             ourInstance.addUser2Group(groupName);
             Intent intent = new Intent(MainActivity.this, MapActivity.class);
             startActivity(intent);

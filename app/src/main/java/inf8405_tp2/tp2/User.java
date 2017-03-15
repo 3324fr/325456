@@ -1,17 +1,12 @@
 package inf8405_tp2.tp2;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.location.Location;
-import android.location.LocationManager;
-import android.util.Log;
+import android.widget.CalendarView;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
-
-import java.util.ArrayList;
 
 /**
  * Created by 422234 on 2017-02-17.
@@ -23,8 +18,18 @@ public class User {
     final static String PROPERTY_LOCATION = "Location";
     @Exclude
     final static String PROPERTY_VOTE = "Vote";
+    @Exclude
+    final static String PROPERTY_USERDATE = "Date";
+    @Exclude
+    final static String PROPERTY_USERTIME = "Time";
 
     public Profile m_profile;
+
+    @PropertyName(PROPERTY_USERDATE)
+    public String m_date;
+
+    @PropertyName(PROPERTY_USERTIME)
+    public String m_time;
 
     @PropertyName(PROPERTY_VOTE)
     public boolean m_vote;
@@ -82,5 +87,4 @@ public class User {
     public int hashCode() {
         return m_profile.hashCode();
     }
-
 }

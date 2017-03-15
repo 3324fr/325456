@@ -47,5 +47,17 @@
     <string name="low_battery_icon">Low Battery Icon</string>
     <string name="battery_low">Battery Low</string>
     <string name="percent">%</string>
+    <string name="event_exists_2">Event exist. No more vote allowed</string>
+    <string name="not_manager">You are not the manager.</string>
+    <string name="need_three_locs">Three locations to be marked. You have : </string>
+    <string name="new_meeting">Meeting created</string>
+    <string name="deniedPerm">permission denied, ...:(</string>
+    <string name="permGranted">permission was granted, :)</string>
+    <string name="youvoted">You already voted!</string>
+    <string name="calendar">Calendar</string>
+    <string name="calendar_open">Calendar opened</string>
+    <string name="attention">Attention</string>
+    <string name="mark_calendar">Mark meeting event on calendar (in preference top right button)</string>
+    <string name="highlight_calendar">Highlight date on calendar?</string>
 
 </resources>

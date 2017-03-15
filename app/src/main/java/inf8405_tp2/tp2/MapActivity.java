@@ -4,73 +4,66 @@ package inf8405_tp2.tp2;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Criteria;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.location.Location;
-import android.location.LocationListener;
+import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.fitness.data.Value;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter {
+public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter,
+        GoogleApiClient.ConnectionCallbacks, LocationListener,
+        GoogleApiClient.OnConnectionFailedListener{
     public static final String MESSAGE_LAT_LNG = "inf8405_tp2.tp2.LatLng";
     public static final String MESSAGE_GROUP_NAME = "inf8405_tp2.tp2.groupName";
+    private final int GRAY_ALPHA = 32;
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    final long ONE_MEGABYTE = 512 * 1024;
 
     private static GoogleMap m_Map;
     private static GoogleApiClient m_GoogleApiClient;
@@ -84,27 +77,36 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     private static SharedPreferences sharedPref;
     private ValueEventListener valEventList;
     private Button m_btnVote;
-    private LocationManager locationManager;
-    private ScheduledExecutorService scheduler;
+    private LocationManager m_locationManager;
     private LinearLayout m_layoutRoot;
-    private final int GRAY_ALPHA = 32;
+    private LocationRequest m_LocationRequest;
+    private boolean downloadedImage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         ourInstance = UserSingleton.getInstance(getApplicationContext());
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         m_layoutRoot = (LinearLayout)findViewById(R.id.maps);
         m_btnVote = (Button)findViewById(R.id.btn_vote_start);
         // Acquire a reference to the system Location Manager
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        m_locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        m_GoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        // Create the LocationRequest object
+        m_LocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
     }
 
     @Override
@@ -144,7 +146,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     @Override
     protected  void onDestroy(){
         super.onDestroy();
-        if(this.m_group != null ) {
+        if(this.m_group != null && valEventList != null ) {
             ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
             // Remove the listener you previously added
         }
@@ -180,39 +182,10 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         m_Map = googleMap;
         // Setting a custom info window adapter for the google map
         m_Map.setInfoWindowAdapter(this);
-        //m_Map.setOnInfoWindowClickListener(this);
-        // Request permission.
-        ActivityCompat.requestPermissions(MapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                MY_LOCATION_REQUEST_CODE);
-
-        // Define a scheduler that responds to location update every mintime
-        this.scheduler =
-                Executors.newScheduledThreadPool(1);
-        this.scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        Log.d(TAG, "Location Update");
-                        final Criteria criteria = new Criteria();
-                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                        criteria.setAltitudeRequired(false);
-                        criteria.setBearingRequired(false);
-                        String provider = locationManager.getBestProvider(criteria, true);
-                        if (!provider.isEmpty() && ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                                == PackageManager.PERMISSION_GRANTED) {
-                            m_Map.setMyLocationEnabled(true);
-                            Location loc = locationManager.getLastKnownLocation(provider);
-                            setUserLocation(loc);
-                        }
-
-                    }
-                });
-            }
-        }, 0, Integer.parseInt(sharedPref.getString(getString(R.string.location_updateInterval_key), "5")), TimeUnit.SECONDS);
-        map();
+        // set up additionnal info for google api, firebase and gmap
+        setDataBaseMap();
+        // attempt to move camera to user if ready
+        moveCameraInit();
     }
 
     @Override
@@ -221,13 +194,16 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 Toast.LENGTH_SHORT).show();
     }
 
-    public void map(){
+    public void setDataBaseMap(){
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             m_Map.setMyLocationEnabled(true);
+            // setup listener for gmap
             SetOnMapListener();
             try {
+                // attempt to update some field parameters such as group
                 updateMemberGroup();
+                //save valevent for onDestroy and set valueEventListener for firebase
                 valEventList = ourInstance.getGroupref().child(this.m_group.m_name)
                         .addValueEventListener(new ValueEventListener() {
                             @Override
@@ -237,14 +213,47 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                                     final Group group = dataSnapshot.getValue(Group.class);
                                     if(group != null){
                                         m_group = group;
+                                        ourInstance.setGroup(group);
                                         // Only get lastest place for new marker. The other ones are supposedly already marked on Gmap
                                         m_Map.clear();
+                                        // create markers for users, places and event
                                         CreateMarker(m_group);
+                                        // update principal button for event options when needed
                                         ParticipateEvent();
                                         User user = ourInstance.getUser();
+                                        // update user vote status to avoid cheater
                                         user.setVote(m_group.getUsers().get(m_group.getUsers().indexOf(user)).getVote());
                                         if(m_group.m_places.size() == 3){
+                                            // make button appearance
                                             m_btnVote.getBackground().setAlpha(255);
+                                            // when 3 places are placed, update their pictures once
+                                            if(!downloadedImage){
+                                                for(final Place place : ourInstance.getGroup().m_places){
+                                                    if(place.image == null){
+                                                        Log.d(TAG, "Downloading img from storage");
+                                                        StorageReference imageReference = ourInstance.getPlaceImageStorage().child(place.m_name);
+                                                        try{
+                                                            imageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                @Override
+                                                                public void onSuccess(byte[] bytes) {
+                                                                    int pos = ourInstance.getGroup().m_places.indexOf(place);
+                                                                    ourInstance.getGroup().m_places.get(pos).image = bytes;
+                                                                }
+                                                            });
+                                                            imageReference.getBytes(ONE_MEGABYTE).addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+                                                                    Log.d(TAG, "inCreateMarker Failed to get picture =============");
+                                                                }
+                                                            });
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                                downloadedImage = true;
+                                            }
                                         }
                                     }
                                 }
@@ -267,6 +276,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         else {
             // Show rationale and request permission.
         }
+        if(m_group == null){
+            m_group = ourInstance.getGroup();
+        }
     }
 
     private void updateMemberGroup() {
@@ -282,19 +294,9 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     public void CreateMarker(final Group m_group){
-        if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
-            for(Place place : m_group.m_places){
-                if(place != null){
-                    MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
-                            .title(place.m_name).snippet("Rating : " + place.m_finalRating);
-                    m_Map.addMarker(marker);
-                }
-            }
-        }
         for(User u : m_group.getUsers()){
             Location loc = u.getCurrentLocation();
             Profile p = u.m_profile;
-
             if(p != null && loc != null){
                 // get the local profile whose contain a picture
                 Profile localProfile = ourInstance.getUserProfile(p.m_name);
@@ -317,12 +319,11 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 public View getInfoWindow(Marker arg0) {
                     return null;
                 }
-
                 // SOURCE: http://stackoverflow.com/questions/15090148/custom-info-window-adapter-with-custom-data-in-map-v2
                 // Defines the contents of the InfoWindow
+                // prepare the special snipet marker for the chosen event place
                 @Override
                 public View getInfoContents(Marker arg0) {
-
                     // Getting view from the layout file info_window_layout
                     View v = getLayoutInflater().inflate(R.layout.custom_infowind, null);
                     ((TextView) v.findViewById(R.id.tv_title)).setText(m_group.m_meeting.m_place.m_name);
@@ -342,13 +343,14 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 private String getStringFromArray(List<User> list) {
                     StringBuilder sb = new StringBuilder();
                     for (User user : list)
-                        {
+                    {
                         sb.append(user.m_profile.m_name);
                         sb.append("\t");
                     }
                     return sb.toString();
                 }
             });
+            // create marker for the chosen event place
             Place place = m_group.m_meeting.m_place;
             if(place != null){
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
@@ -356,8 +358,46 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 m_Map.addMarker(marker);
             }
         }
+        // update img and rating for our 2 different group pointers
+        updateMPlace();
+        // create marker for places (not event)
+        if(m_group.m_places.size() == 3 && m_group.m_meeting==null){
+            for(final Place place : m_group.m_places){
+                if(place != null){
+                    if(place.image != null){
+                        Bitmap temp = BitmapFactory.decodeByteArray(place.image, 0, place.image.length);
+                        m_Map.addMarker(new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                                .icon(BitmapDescriptorFactory.fromBitmap(temp)).title(place.m_name).snippet("Rating : " + place.m_finalRating)
+                                // Specifies the anchor to be at a particular point in the marker image.
+                                .anchor(0.1f, 1));
+                    } else {
+                        MarkerOptions marker = new MarkerOptions().position(new LatLng(place.m_loc.getLatitude(),place.m_loc.getLongitude()))
+                                .title(place.m_name).snippet("Rating : " + place.m_finalRating);
+                        m_Map.addMarker(marker);
+                    }
+                }
+            }
+        }
     }
 
+    private void updateMPlace() {
+        for(Place place : ourInstance.getGroup().m_places){
+            String name = place.m_name;
+            for(Place place2 : m_group.m_places){
+                if(place2.m_name.equals(name) || place2.m_name == name){
+                    int pos = m_group.m_places.indexOf(place2);
+                    if(pos >= 0){
+                        m_group.m_places.get(pos).image = place.image;
+                        m_group.m_places.get(pos).m_finalRating = place.m_finalRating;
+                    } else {
+                        Log.d("Fail", " -_- ------------------------------------- -_- ");
+                    }
+                }
+            }
+        }
+    }
+
+    // update text field when rating Places
     private void updateButtonTextField() {
         Button btn1 = (Button)findViewById(R.id.btn_place1);
         Button btn2 = (Button)findViewById(R.id.btn_place2);
@@ -370,6 +410,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         ll.invalidate();
     }
 
+    // Update text field when choosing event place
     private void updateMeetingTextField() {
         Button btn1 = (Button)findViewById(R.id.btn_meeting1);
         Button btn2 = (Button)findViewById(R.id.btn_meeting2);
@@ -389,23 +430,12 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         ll.invalidate();
     }
 
-    private SuperLocation GetLocationFromUser(String username){
-        List<User> users = new ArrayList<>(m_group.getUsers());
-        for(User user : users){
-            if(user.m_profile.m_name.equals(username)){
-                return user.getCurrentLocation();
-            }
-        }
-        Log.d(TAG, "User and profile not found ===========");
-        return null;
-    }
-
     public void setUserLocation(final Location loc) {
-
-
         Group group =  this.m_group;
         User user = ourInstance.getUser();
         if ( user != null && group != null && !group.m_name.isEmpty() && group.m_users.containsValue(user)) {
+            m_group.m_users.get(user.m_profile.m_name).setCurrentLocation(loc);
+            m_group.m_users.put(user.m_profile.m_name, user);
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_USERS).child(user.m_profile.m_name).child(User.PROPERTY_LOCATION);
             groupRef.setValue(loc);
@@ -433,17 +463,24 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                         startActivity(i);
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(), "You are not the manager.", Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(), R.string.not_manager, Toast.LENGTH_LONG);
                 }
             }
         });
     }
 
+    // OnClickVote for the same button
     public void OnClickVote(View view){
+        /////////////////////////
+        // case when event exists
+        /////////////////////////
         if(m_group.m_meeting != null){
-            Toast.makeText(getApplicationContext(), "Event exist. No more vote allowed", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.event_exists_2, Toast.LENGTH_LONG).show();
             return;
         }
+        /////////////////////////
+        // case when 3 places are placed, and its time to vote
+        /////////////////////////
         if(!ourInstance.getUser().getVote()){
             View child = getLayoutInflater().inflate(R.layout.content_map, null);
             if(view.getId() == R.id.btn_vote_start){
@@ -455,7 +492,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     item.addView(child, 0);
                     updateButtonTextField();
                 } else {
-                    Toast.makeText(this, "Three locations to be marked", Toast.LENGTH_SHORT).show();
+                    String pop = this.getString(R.string.need_three_locs) +""+ m_group.m_places.size() + " marked.";
+                    Toast.makeText(this, pop, Toast.LENGTH_SHORT).show();
                 }
             }
             if(view.getId() == R.id.btn_vote_confirm){
@@ -479,7 +517,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 ourInstance.getUser().setVote(true);
             }
         } else {
-            Toast.makeText(this, "You already voted!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.youvoted, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -550,6 +588,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         Integer[]rbs = {R.id.ratingBar1, R.id.ratingBar2, R.id.ratingBar3};
         for(int i = 0; i < rbs.length; ++i){
             rb = (RatingBar)findViewById(rbs[i]);
+            Group group = ourInstance.getGroup();
             m_group.m_places.get(i).m_rating.add(Math.floor(rb.getRating()));
         }
         updateAllRating();
@@ -589,7 +628,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             DatabaseReference groupRef = ourInstance.getGroupref().child(group.m_name)
                     .child(Group.PROPERTY_MEETING);
             groupRef.setValue(meeting);
-            Toast.makeText(getApplicationContext(), "Meeting created", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.new_meeting, Toast.LENGTH_SHORT).show();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -601,13 +640,15 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
     private void ParticipateEvent() {
-        if(m_group.m_meeting != null){
+        if(m_group.m_meeting != null && m_layoutRoot.indexOfChild(m_btnVote) != -1){
             View child = getLayoutInflater().inflate(R.layout.content_map_participation, null);
             m_layoutRoot.removeView(m_btnVote);
             m_layoutRoot.addView(child);
         }
     }
 
+    // Participation
+    // Here we add or remove according to the user decision
     public void OnClickParticipate(View view){
         DatabaseReference groupRef = null;
         User user = ourInstance.getUser();
@@ -617,12 +658,13 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 update |= addUserToList(m_group.m_meeting.m_participants, user);
                 update |= removeUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
-
+                ourInstance.updateCalendarWithMeeting(this);
                 break;
             case R.id.btn_maybe:
                 update |= addUserToList(m_group.m_meeting.m_maybe, user);
                 update |= removeUserToList(m_group.m_meeting.m_decline, user);
                 update |= removeUserToList(m_group.m_meeting.m_participants, user);
+                ourInstance.updateCalendarWithMeeting(this);
                 break;
             case R.id.btn_decline:
                 update |= addUserToList(m_group.m_meeting.m_decline, user);
@@ -638,7 +680,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             groupRef = ourInstance.getGroupref().child(m_group.m_name).child(Group.PROPERTY_MEETING).child(Meeting.PROPERTY_DECLINE);
             groupRef.setValue(m_group.m_meeting.m_decline);
         }
-
     }
 
     public boolean addUserToList(List<User> list, User user){
@@ -655,5 +696,121 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             return true;
         }
         return false;
+    }
+    //SOURCE http://developer.android.com/training/permissions/requesting.html
+    @Override
+    public void onConnected(Bundle bundle) {
+        getAndSetUserLocationWithPermission();
+    }
+
+    //SOURCE http://developer.android.com/training/permissions/requesting.html
+    private void getAndSetUserLocationWithPermission(){
+        try{
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                //------------------------------------------------------------------------------
+                ActivityCompat.requestPermissions(MapActivity.this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_LOCATION_REQUEST_CODE);
+
+                return;
+            }
+            if(m_GoogleApiClient.isConnected()){
+                LocationServices.FusedLocationApi.requestLocationUpdates(m_GoogleApiClient, m_LocationRequest, this);
+                setDataBaseMap();
+            }
+        }
+        catch (SecurityException e){
+            e.printStackTrace();
+        }
+    }
+
+    //SOURCE: http://android-er.blogspot.ca/2016/04/requesting-permissions-of.html
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        switch (requestCode) {
+            case MY_LOCATION_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(MapActivity.this,
+                            R.string.permGranted,
+                            Toast.LENGTH_LONG).show();
+                    getAndSetUserLocationWithPermission();
+
+                } else {
+                    Toast.makeText(MapActivity.this,
+                            R.string.deniedPerm,
+                            Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume Fired =======");
+        m_GoogleApiClient.connect();
+        moveCameraInit();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (m_GoogleApiClient.isConnected()) {
+            m_GoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        setUserLocation(location);
+    }
+
+    private void moveCameraInit(){
+        if(m_group!= null && m_group.m_users.size()>0)
+        {
+            SuperLocation loc = m_group.m_users.get(ourInstance.getUser().m_profile.m_name).getCurrentLocation();
+            if(loc != null && m_Map != null){
+                CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude()));
+                //CameraUpdate zoom = CameraUpdateFactory.zoomTo(12);
+                m_Map.moveCamera(center);
+                //m_Map.animateCamera(zoom);
+            }
+        }
     }
 }
