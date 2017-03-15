@@ -1,19 +1,14 @@
 package inf8405_tp2.tp2;
 
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.location.Location;
-import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -33,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -40,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -149,18 +146,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         if(this.m_group != null && valEventList != null ) {
             ourInstance.getGroupref().child(this.m_group.m_name).removeEventListener(valEventList);
             // Remove the listener you previously added
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == MY_LOCATION_REQUEST_CODE) {
-            if (permissions.length == 1 &&
-                    permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            } else {
-                // todo : Permission was denied. Display an error message.
-            }
         }
     }
 
@@ -441,16 +426,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             groupRef.setValue(loc);
         }
     }
-
-    public void visit(User user) {
-        //// TODO: 2017-03-08
-
-    }
-    public void visit(Manager manager) {
-        //// TODO: 2017-03-08
-
-    }
-
     private void SetOnMapListener(){
         m_Map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override

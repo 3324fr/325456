@@ -15,11 +15,4 @@ public class Manager extends User {
         super(user);
     }
 
-    @Exclude
-    @Override
-    public void accept(MapActivity activity){
-        activity.visit(this);
-    }
-
-
 }

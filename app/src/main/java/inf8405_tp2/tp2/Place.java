@@ -43,6 +43,17 @@ public class Place {
         }
         m_finalRating = (int)temp / m_rating.size();
     }
+    @Exclude
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof Place)) {
+            return false;
+        }
+        Place that = (Place) other;
+
+        // Custom equality check here.
+        return this.m_name.equals(that.m_name);
+    }
 
     @Exclude
     public byte[] image;

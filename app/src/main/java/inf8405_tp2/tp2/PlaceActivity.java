@@ -66,7 +66,7 @@ public class PlaceActivity extends AppCompatActivity {
 
 
     public void onClickImage(View view){
-        if(((EditText)findViewById(R.id.editText_place_name)).getText().toString() != null) {
+        if(!((EditText)findViewById(R.id.editText_place_name)).getText().toString().isEmpty()) {
             Intent intent = new Intent(Intent.ACTION_PICK,
                     MediaStore.Images.Media.INTERNAL_CONTENT_URI);
             intent.setType("image/*");

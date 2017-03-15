@@ -67,11 +67,6 @@ public class User {
         return this.m_vote;
     }
 
-    @Exclude
-    public void accept(MapActivity activity){
-        activity.visit(this);
-    }
-
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof User)) {
