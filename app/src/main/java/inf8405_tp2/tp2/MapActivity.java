@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -103,7 +104,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(5 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
-
     }
 
     @Override
@@ -463,6 +463,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     m_btnVote.setText(R.string.vote_en_cours);
                     View frag = (View)findViewById(R.id.map);
                     frag.setVisibility(View.INVISIBLE);
+                    m_btnVote.setVisibility(View.INVISIBLE);
                     LinearLayout item = (LinearLayout)findViewById(R.id.maps);
                     item.addView(child, 0);
                     updateButtonTextField();
@@ -483,6 +484,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 UpdateButtonAfterVote(m_layoutRoot);
                 View frag = (View)findViewById(R.id.map);
                 frag.setVisibility(View.VISIBLE);
+                m_btnVote.setVisibility(View.VISIBLE);
                 m_layoutRoot.invalidate();
                 Group group =  this.m_group;
                 User user = ourInstance.getUser();
@@ -761,6 +763,14 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         Log.d(TAG, "onResume Fired =======");
         m_GoogleApiClient.connect();
         moveCameraInit();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String value = sharedPref.getString(getString(R.string.location_updateInterval_key),"60");
+        if(Integer.valueOf(value) >= 1){
+            m_LocationRequest = LocationRequest.create()
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setInterval(Integer.valueOf(value) * 1000)        // 10 seconds, in milliseconds
+                    .setFastestInterval(Integer.valueOf(value) * 1000); // 1 second, in milliseconds
+        }
     }
 
     @Override
