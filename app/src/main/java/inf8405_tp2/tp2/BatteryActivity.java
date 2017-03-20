@@ -26,6 +26,7 @@ public class BatteryActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Calculate the battery percent level if it not in intent extra
         int percent = getIntent().getIntExtra(BatteryReceiver.BATTERY_LEVEL,0);
         if(percent == 0){
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -52,7 +53,7 @@ public class BatteryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onClick(View view){
+    public void onClick(View view){ // action to pass in battery saver mode
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(getString(R.string.location_updateInterval_key),"60");
