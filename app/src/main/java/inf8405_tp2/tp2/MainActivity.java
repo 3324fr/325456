@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         ourInstance = UserSingleton.getInstance(getApplicationContext());
 
         // find the retained fragment on activity restarts
+        // this fragment open a login dialog
         fm = getSupportFragmentManager();
         m_userFragment = (UserFragment) fm.findFragmentByTag(TAG_RETAINED_USER);
     }
@@ -66,8 +67,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         UserSingleton userS= UserSingleton.getInstance(getApplicationContext());
 
-
-
         // create the fragment and data the first time
         if (m_userFragment == null) {
             // add the fragment
@@ -76,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         m_profile = userS.getUserProfile();
-        //Toast.makeText(this, getString(R.string.hello) +" " + m_profile.m_name, Toast.LENGTH_SHORT).show();
         picture();
     }
     @Override
@@ -85,16 +83,16 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            m_profile.m_picture = imageBitmap;
-            UserSingleton.getInstance(getApplicationContext()).setM_user(m_profile);
+            m_profile.m_picture = imageBitmap; // a profile contains a picture
+            UserSingleton.getInstance(getApplicationContext()).setM_user(m_profile); // save profile in SQLite
             picture();
         }
     }//onActivityResult
 
-    private void picture() {
+    private void picture() {//Display picture
         ImageView mImageView = (ImageView) findViewById(R.id.picture);
         if(m_profile.m_picture != null){
-            mImageView.setImageBitmap(  m_profile.m_picture);
+            mImageView.setImageBitmap( m_profile.m_picture);
         }
     }
 
@@ -103,9 +101,9 @@ public class MainActivity extends AppCompatActivity {
         if(!username.isEmpty() && !username.matches("^-?\\d+$")) {
             UserSingleton userS = UserSingleton.getInstance(getApplicationContext());
             Toast.makeText(this, getString(R.string.hello)+ " " + username, Toast.LENGTH_SHORT).show();
-            Profile profile = userS.login(username);
+            Profile profile = userS.login(username); //log user
 
-            if (profile == null) {
+            if (profile == null) { //check if the profile already exist or take a photo is not
                 m_profile = new Profile();
                 m_profile.m_name = username;
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -121,15 +119,15 @@ public class MainActivity extends AppCompatActivity {
     }
     public void setting(View view){
         Intent intent = new Intent(this, PreferencesActivity.class);
-        startActivity(intent);
+        startActivity(intent); //start setting activity
     }
 
     public void OnClickUsername(View view) {
-       m_userFragment = new UserFragment();
+        m_userFragment = new UserFragment(); //open fragment dialog in order to choose a new login
         fm.beginTransaction().add(m_userFragment, TAG_RETAINED_USER).commit();
     }
 
-    public void OnClickGMap(View view) {
+    public void OnClickGMap(View view) { // start the application
         EditText editText_group = ((EditText) findViewById(R.id.et_groupname));
         String groupName = editText_group.getText().toString();
         if(!groupName.isEmpty() && !groupName.matches("^-?\\d+$")) {
@@ -191,9 +189,5 @@ public class MainActivity extends AppCompatActivity {
 
             super.onDestroyView();
         }
-
-
-
-}
-
+    }
 }

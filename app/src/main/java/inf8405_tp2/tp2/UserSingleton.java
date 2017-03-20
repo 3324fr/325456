@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Created by 422234 on 2017-03-05.
+ * This singleton contains login information
  */
 public class UserSingleton {
 
