@@ -1,9 +1,5 @@
 package inf8405_tp2.tp2;
 
-import android.graphics.Bitmap;
-import android.location.Location;
-
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;

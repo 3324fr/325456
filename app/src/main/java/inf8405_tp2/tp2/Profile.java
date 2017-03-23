@@ -1,17 +1,13 @@
 package inf8405_tp2.tp2;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.annotation.XmlRes;
-
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.storage.StorageReference;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +40,7 @@ public class Profile {
             return false;
         }
         Profile that = (Profile) other;
-
         String toCompare = that.m_name;
-
         // Custom equality check here.
         return this.m_name.equals(toCompare);
     }
@@ -61,9 +55,7 @@ public class Profile {
     public void save(SQLiteDatabase db ) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         m_picture.compress(Bitmap.CompressFormat.PNG, 0, stream);
-
         bytesPicture = stream.toByteArray();
-
         // Create insert entries
         ContentValues values = new ContentValues();
         values.put(ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE, m_name);
@@ -73,7 +65,6 @@ public class Profile {
     }
     @Exclude
     public static Profile get(SQLiteDatabase db, String name) {
-
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
         String[] projection = {
@@ -85,8 +76,6 @@ public class Profile {
         // Filter results WHERE
         String selection = ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " = ?";
         String[] selectionArgs = {name};
-
-
         Cursor cursor = db.query(
                 ContractSQLite.ProfileEntry.TABLE_NAME,   // The table to query
                 projection,                               // The columns to return
@@ -105,14 +94,11 @@ public class Profile {
                 bitmap = BitmapFactory.decodeByteArray(bitmapbytes, 0, bitmapbytes.length);
             profile = new Profile(cursor.getString(1), bitmap);
         }
-
         return profile;
     }
 
     @Exclude
     public static final List<String> getAllUsername(SQLiteDatabase db){
-
-
         Cursor  cursor = db.rawQuery("SELECT DISTINCT " +
                 ContractSQLite.ProfileEntry.COLUMN_NAME_TITLE + " FROM " +
                 ContractSQLite.ProfileEntry.TABLE_NAME ,null);
@@ -124,7 +110,6 @@ public class Profile {
                 cursor.moveToNext();
             }
         }
-
         return list;
 
     }

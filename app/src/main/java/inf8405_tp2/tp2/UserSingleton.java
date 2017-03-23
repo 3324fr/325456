@@ -6,11 +6,7 @@ import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.support.annotation.NonNull;
 import android.util.Log;
-
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -20,10 +16,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Created by 422234 on 2017-03-05.
@@ -98,7 +92,8 @@ public class UserSingleton {
                                             });
                                 }
                             }
-                        }}
+                        }
+                    }
                     catch(Exception e){
                         e.printStackTrace();
                     }
@@ -146,7 +141,6 @@ public class UserSingleton {
     public static User getUser() {
         return m_user;
     }
-
 
     public void setM_user(Profile profile) {
         SQLiteDatabase db = m_sqLitehelper.getWritableDatabase();
@@ -207,9 +201,6 @@ public class UserSingleton {
         return m_group.m_name;
     }
 
-
-
-
     public DatabaseReference getGroupref() {
         return this.m_GroupRef;
     }
@@ -228,8 +219,6 @@ public class UserSingleton {
     public void createPlace(final Place place, String groupName) {
 
         String placeName = place.m_name;
-
-
         if(!groupName.isEmpty() && !placeName.isEmpty()) {
             final DatabaseReference groupRef = m_GroupRef.child(groupName);
             // Attach a listener to read the data at our group reference

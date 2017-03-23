@@ -1,14 +1,9 @@
 package inf8405_tp2.tp2;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -17,23 +12,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.google.android.gms.maps.model.LatLng;
-
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class PlaceActivity extends AppCompatActivity {
 
     final static int PICK_IMAGE = 7;
     private LatLng m_latLng;
     private String m_groupName;
-    private String mTmpGalleryPicturePath;
-    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +52,7 @@ public class PlaceActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    // Crop image
     public void onClickImage(View view){
         if(!((EditText)findViewById(R.id.editText_place_name)).getText().toString().isEmpty()) {
             Intent intent = new Intent(Intent.ACTION_PICK,
@@ -81,13 +69,12 @@ public class PlaceActivity extends AppCompatActivity {
         }
     }
 
+    // save Image
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
-
             Place place= new Place();
-
             Uri selectedImage = data.getData();
             if(selectedImage!= null){
                 try{
@@ -101,10 +88,6 @@ public class PlaceActivity extends AppCompatActivity {
                 catch (IOException e){
                     e.printStackTrace();
                 }
-                //ImageView mImageView = (ImageView) findViewById(R.id.imageView_place);
-                //mImageView.setImageBitmap(  imageBitmap);
-
-
             }
             place.m_name = ((EditText)findViewById(R.id.editText_place_name)).getText().toString();
 

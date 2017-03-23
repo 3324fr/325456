@@ -1,6 +1,5 @@
 package inf8405_tp2.tp2;
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -68,7 +67,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     private static UiSettings mapSettings;
     private final static int MY_LOCATION_REQUEST_CODE = 1;
     private static final String TAG = "LocationActivity";
-    private static final String TAG_ADD_PLACE = "inf8405_tp2.tp2.addPlaceFragment";
 
     private static Group m_group;
     private static UserSingleton ourInstance;
@@ -108,8 +106,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-
     }//onActivityResult
 
     @Override
@@ -131,7 +127,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 Intent intentBattery = new Intent(this, BatteryActivity.class);
                 startActivity(intentBattery);
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.

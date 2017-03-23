@@ -1,9 +1,5 @@
 package inf8405_tp2.tp2;
-
-import android.location.Location;
-
 import com.google.firebase.database.Exclude;
-import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
 
 import java.util.ArrayList;
@@ -38,9 +34,6 @@ public class Meeting {
 
     @Exclude
     final static String PROPERTY_DECLINE = "decline";
-
-
-    private int chosenPlace;
 
     @PropertyName(PROPERTY_PLACE)
     public Place m_place;
@@ -78,6 +71,4 @@ public class Meeting {
         m_maybe = new ArrayList<>();
         m_decline = new ArrayList<>();
     }
-
-
 }

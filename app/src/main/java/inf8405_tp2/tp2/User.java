@@ -1,9 +1,6 @@
 package inf8405_tp2.tp2;
 
-import android.content.Context;
 import android.location.Location;
-import android.widget.CalendarView;
-
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
@@ -73,7 +70,6 @@ public class User {
             return false;
         }
         User that = (User) other;
-
         // Custom equality check here.
         return this.m_profile.equals(that.m_profile);
     }
